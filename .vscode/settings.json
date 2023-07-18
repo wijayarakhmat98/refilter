@@ -5,6 +5,8 @@
 	"editor.tabSize": 2,
 
 	"editor.autoIndent": "none",
+	"editor.useTabStops": false,
+	"editor.detectIndentation": false,
 
 	"editor.autoClosingBrackets": "never",
 	"editor.autoClosingQuotes": "never",
