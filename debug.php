@@ -8,8 +8,18 @@ function main() {
 
 	$html = file_get_contents(sprintf($urlf, $id));
 
-	printf('<p>%s</p>', sprintf($urlf, $id));
+	echo '<details>';
+	printf('<summary>%s</summary>', sprintf($urlf, $id));
 	printf('<div style="%s">%s</div>', 'white-space: pre-wrap;', htmlspecialchars($html));
+	echo '</details>';
+
+	for ($i = 0; $i < 10; ++$i) {
+		printf('<p>%d</p>', $i + 1);
+		ob_flush();
+		flush();
+		sleep(1);
+	}
+	echo '<p>Done</p>';
 }
 
 main();
