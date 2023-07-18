@@ -51,6 +51,16 @@ class major_queue {
 		return $this->head;
 	}
 
+	/*
+	 * pop() may return null when the amount of nonexistent
+	 * content encountered so far has reached the specified
+	 * margin. Yet it may not terminate as further reattempt
+	 * can invalidate the current margin. In such case,
+	 * pop() may continue its progression.
+	 *
+	 * fail queue is maintained to be sorted from the oldest
+	 * to the most recent encounters.
+	 */
 	public function status($id, $success) {
 		if ($success) {
 			if ($id == $this->head) {
@@ -85,6 +95,10 @@ class minor_queue {
 		$this->time[] = $timestamp;
 	}
 
+	/*
+	 * queue is maintained to be sorted from the nearest
+	 * to the furthest from scheduled reattempt.
+	 */
 	public function pop() {
 		if (count($this->queue) == 0 || time() < $this->time[0])
 			return null;
@@ -92,6 +106,10 @@ class minor_queue {
 		return array_shift($this->queue);
 	}
 
+	/*
+	 * Queue pop() may return null but stays active, where
+	 * it isn't empty but is waiting on the cool-down.
+	 */
 	public function active() {
 		return count($this->queue) > 0;
 	}
@@ -100,6 +118,11 @@ class minor_queue {
 function crawl($urlf, $lb, $ub, $margin, $attempt, $cooldown, $ascending) {
 	assert($lb <= $ub && $margin >= 1 && $attempt >= 1 && $cooldown >= 0);
 
+	/*
+	 * The number of attempts should always at least be 1,
+	 * and the first job will always be the major queue, therefore
+	 * it is guaranteed to exists.
+	 */
 	$job = [new major_queue($lb, $ub, $margin, $ascending)];
 	for ($i = 1; $i < $attempt; ++$i)
 		$job[] = new minor_queue();
@@ -108,6 +131,12 @@ function crawl($urlf, $lb, $ub, $margin, $attempt, $cooldown, $ascending) {
 		$active = false;
 		$id = null;
 
+		/*
+		 * Priority starts from the most attempt to the fewest.
+		 * This is to prevent the major queue to progress too
+		 * further from the minor queue, piling up reattempt that
+		 * never gets processed despite passing its schedule.
+		 */
 		for ($i = $attempt - 1; $i >= 0; --$i) {
 			if ($job[$i]->active())
 				$active = true;
