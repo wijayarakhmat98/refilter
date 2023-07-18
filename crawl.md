@@ -16,10 +16,12 @@ For example, given the following url:
 Therefore, given a lower bound and an upper bound for the ids, all the corresponding urls can be crawled.
 
 For example,
+
 ```
 ... o o | @ o o o ... o o o @ | o o ...
           38401264          38401299
 ```
+
 where 38401264 is the lower bound, and 38401299 is the upper bound, urls within and on these bounds will be crawled, while those outside will not.
 
 # Unknown bound
@@ -27,6 +29,7 @@ where 38401264 is the lower bound, and 38401299 is the upper bound, urls within 
 Given a known lower bound id, the upper bound may be unknown.
 
 For example,
+
 ```
 ... o o | @ o o o ... o o o x x x x x ...
           38401264
@@ -64,3 +67,12 @@ Therefore, stopping a crawl immediately when encountering a url that don't exist
 As such, a margin can be used where, after a certain number of urls that doesn't exists have been encountered, the crawl will be terminated.
 
 Whether there exists urls beyond the margin are purely business decision. Determining an acceptable value for a margin requires some educated guess, past experience, and analysis. Too large of a margin means spending extra time crawling contents that may not exists, too little means there are chances of missing out on valuable contents.
+
+For example, the following illustrates an ascending crawl with a margin or 3.
+
+```
+        @==>>                         STOP
+... o | @ o o x o o o x x o x o o x x % x x x # | x ...
+```
+
+Hence, it can be seen that margin is not ascending or descending agnostic. It is a heuristic used by the crawler to determine when to terminate. The effect of using the same bounds and margin will, in general, result differently on an ascending or a descending crawl.
