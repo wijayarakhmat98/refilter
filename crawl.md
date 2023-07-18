@@ -76,3 +76,17 @@ For example, the following illustrates an ascending crawl with a margin or 3.
 ```
 
 Hence, it can be seen that margin is not ascending or descending agnostic. It is a heuristic used by the crawler to determine when to terminate. The effect of using the same bounds and margin will, in general, result differently on an ascending or a descending crawl.
+
+# Attempt
+
+Sometimes, although the corresponding url of an id exists, due to various reason, however, request for content may not be successful the first time around. As such, having the ability to reattempt a request after some cool-down time is desirable.
+
+```
+    Attempt | @==>>
+          1 | @ o o o x o o o o o x x o o x o o x x x ...
+(delayed) 2 |         x           o x     o     x x x ...
+          . |
+          . |
+          . |                                       STOP
+(delayed) n |         o             o           x x x ...
+```
