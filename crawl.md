@@ -50,3 +50,17 @@ For example, if the upper bound is known to exists but the lower bound isn't the
 ... x x x | # x x x x x o o o ... o o o @ | o o ...
             38071127                    38401264
 ```
+
+# Margin
+
+Not all ids have a corresponding url. That is, some id intervals contain gaps.
+
+```
+... x x x x x o o o ... o o x o o o o x o o o x x o o x o o o ... o o o x x x x x ...
+```
+
+Therefore, stopping a crawl immediately when encountering a url that don't exist may be premature.
+
+As such, a margin can be used where, after a certain number of urls that doesn't exists have been encountered, the crawl will be terminated.
+
+Whether there exists urls beyond the margin are purely business decision. Determining an acceptable value for a margin requires some educated guess, past experience, and analysis. Too large of a margin means spending extra time crawling contents that may not exists, too little means there are chances of missing out on valuable contents.

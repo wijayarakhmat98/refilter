@@ -4,26 +4,34 @@ function main() {
 	echo '<h1>Ascending Crawl</h1>';
 	ascending_crawl(
 		'https://sirup.lkpp.go.id/sirup/home/detailPaketPenyediaPublic2017/%d',
-		38716140, 38716150
+		38717036, 38717736, 3
 	);
 	echo '<h1>Descending Crawl</h1>';
 	descending_crawl(
 		'https://sirup.lkpp.go.id/sirup/home/detailPaketPenyediaPublic2017/%d',
-		38072715, 38072725
+		38071127, 38071927, 3
 	);
 }
 
-function ascending_crawl($urlf, $lb, $ub) {
+function ascending_crawl($urlf, $lb, $ub, $margin) {
+	$fail = 0;
 	for ($id = $lb; $id <= $ub; ++$id) {
-		if (!get_content(sprintf($urlf, $id)))
-			break;
+		if (get_content(sprintf($urlf, $id)))
+			$fail = 0;
+		else
+			if (++$fail >= $margin)
+				break;
 	}
 }
 
-function descending_crawl($urlf, $lb, $ub) {
+function descending_crawl($urlf, $lb, $ub, $margin) {
+	$fail = 0;
 	for ($id = $ub; $id >= $lb; --$id) {
-		if (!get_content(sprintf($urlf, $id)))
-			break;
+		if (get_content(sprintf($urlf, $id)))
+			$fail = 0;
+		else
+			if (++$fail >= $margin)
+				break;
 	}
 }
 
