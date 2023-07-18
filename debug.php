@@ -5,6 +5,7 @@ function main() {
 	// debug1();
 	// debug2();
 	// debug3();
+	// debug4();
 }
 
 /* Content download */
@@ -40,6 +41,29 @@ function debug3() {
 		printf('<div style="%s">%s</div>', 'white-space: pre-wrap;', htmlspecialchars($html));
 	else
 		echo '<p>Content does not exists.</p>';
+}
+
+/* Connect to PostgreSQL */
+function debug4() {
+	$dbconn = pg_connect("user=postgres password=1234");
+	echo '<p>';
+	var_dump($dbconn);
+	echo '</p>';
+
+	$query = 'SELECT current_database()';
+	$result = pg_query($query);
+
+	echo '<table>';
+	while ($line = pg_fetch_array($result, null, PGSQL_ASSOC)) {
+		echo '<tr>';
+		foreach ($line as $col_value)
+			echo '<td>'.$col_value.'</td>';
+		echo '</tr>';
+	}
+	echo '</table>';
+
+	pg_free_result($result);
+	pg_close($dbconn);
 }
 
 main();
