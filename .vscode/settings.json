@@ -1,0 +1,16 @@
+{
+	"files.eol": "\n",
+
+	"editor.insertSpaces": false,
+	"editor.tabSize": 2,
+
+	"editor.autoIndent": "none",
+
+	"editor.autoClosingBrackets": "never",
+	"editor.autoClosingQuotes": "never",
+	"editor.autoSurround": "never",
+
+	"files.trimTrailingWhitespace": true,
+	"files.trimFinalNewlines": true,
+	"files.insertFinalNewline": true
+}
