@@ -10,13 +10,21 @@ function main() {
 
 	$task = new interleave();
 
-	$task->add(5, new crawl_queue(
+	$task->add(2, new crawl_queue(
 		'https://sirup.lkpp.go.id/sirup/home/detailPaketPenyediaPublic2017/%d',
-		ASCENDING , 44023335, 44024335, 2, 3, 3
+		new post_content(
+			'https://sirup.lkpp.go.id/sirup/home/detailPaketPenyediaPublic2017/%d',
+			ASCENDING
+		),
+		ASCENDING, 44023335, 44023345, 2, 3, 3
 	));
 
-	$task->add(1, new crawl_queue(
+	$task->add(2, new crawl_queue(
 		'https://sirup.lkpp.go.id/sirup/home/detailPaketPenyediaPublic2017/%d',
+		new post_content(
+			'https://sirup.lkpp.go.id/sirup/home/detailPaketPenyediaPublic2017/%d',
+			DESCENDING
+		),
 		DESCENDING, 16998889, 16999889, 2, 3, 3
 	));
 
@@ -27,15 +35,34 @@ function main() {
 	echo '</div>';
 }
 
-function post_content($url, $html, $ascending, $retry) {
-	echo '<details>';
-	printf('<summary>%s [%s] [%d] [%s]</summary>', $url, ($ascending) ? 'ASCENDING ' : 'DESCENDING', $retry, ($html) ? 'SUCCESS' : 'FAIL');
-	if ($html)
-		printf('<div style="%s">%s</div>', 'white-space: pre-wrap;', htmlspecialchars($html));
-	else
-		printf('<a href="%s">%s</a>', $url, $url);
-	echo '</details>';
-	ob_flush(); flush();
+class post_content {
+	public $urlf;
+	public $ascending;
+	public $fail;
+
+	public function __construct($urlf, $ascending) {
+		$this->urlf = $urlf;
+		$this->ascending = ($ascending) ? '+++' : '---';
+		$this->fail = [];
+	}
+
+	public function __invoke($id, $success, $content) {
+		$url = sprintf($this->urlf, $id);
+		$trial = 1;
+		if (!$success) {
+			if (!array_key_exists($id, $this->fail))
+				$this->fail[$id] = 0;
+			$trial = ++$this->fail[$id];
+		}
+		echo '<details>';
+		printf('<summary>%s [%s] [ %d ] [%s]</summary>', $url, $this->ascending, $trial, ($success) ? 'SUCCESS' : 'FAIL');
+		if ($success)
+			printf('<div style="%s">%s</div>', 'white-space: pre-wrap;', htmlspecialchars($content));
+		else
+			printf('<a href="%s">%s</a>', $url, $url);
+		echo '</details>';
+		ob_flush(); flush();
+	}
 }
 
 class interleave {
@@ -82,18 +109,23 @@ class interleave {
 	}
 }
 
+/*
+ * result_callback($id, $success, $content)
+ */
 class crawl_queue {
 	public $urlf;
+	public $result_callback;
 	public $attempt;
 	public $cooldown;
 	public $job;
 
 	public $ascending;
 
-	public function __construct($urlf, $ascending, $lb, $ub, $margin, $attempt, $cooldown) {
+	public function __construct($urlf, $result_callback, $ascending, $lb, $ub, $margin, $attempt, $cooldown) {
 		assert($lb <= $ub && $margin >= 1 && $attempt >= 1 && $cooldown >= 0);
 
 		$this->urlf = $urlf;
+		$this->result_callback = $result_callback;
 		$this->attempt = $attempt;
 		$this->cooldown = $cooldown;
 
@@ -105,8 +137,6 @@ class crawl_queue {
 		$this->job = [new major_queue($ascending, $lb, $ub, $margin)];
 		for ($i = 1; $i < $attempt; ++$i)
 			$this->job[] = new minor_queue();
-
-		$this->ascending = $ascending;
 	}
 
 	public function work() {
@@ -132,8 +162,10 @@ class crawl_queue {
 			return $active;
 
 		$url = sprintf($this->urlf, $id);
-		$html = @file_get_contents($url);
-		$this->job[0]->status($id, (bool) $html);
+		$content = @file_get_contents($url);
+		$success = $content !== false;
+
+		$this->job[0]->status($id, $success);
 
 		/*
 		 * Only minor_queue has push, major_queue don't.
@@ -142,10 +174,10 @@ class crawl_queue {
 		 * least be 1. Otherwise, when retry is 0, id is
 		 * null and this code will not be reached.
 		 */
-		if (!$html && $retry < count($this->job))
+		if (!$success && $retry < $this->attempt)
 			$this->job[$retry]->push($id, time() + $this->cooldown);
 
-		post_content($url, $html, $this->ascending, $retry);
+		($this->result_callback)($id, $success, $content);
 
 		return true;
 	}
