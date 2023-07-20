@@ -8,17 +8,111 @@ define('DESCENDING', false);
 function main() {
 	set_time_limit(MAX_EXECUTION_TIME);
 
-	echo '<h1>Ascending Crawl</h1>';
-	crawl(
+	$task = [];
+
+	$task[] = new crawl_queue(
 		'https://sirup.lkpp.go.id/sirup/home/detailPaketPenyediaPublic2017/%d',
-		44018484, 44019484, 2, 3, 3, ASCENDING
+		ASCENDING , 44023335, 44023345, 2, 3, 3
 	);
 
-	echo '<h1>Descending Crawl</h1>';
-	crawl(
+	$task[] = new crawl_queue(
 		'https://sirup.lkpp.go.id/sirup/home/detailPaketPenyediaPublic2017/%d',
-		16998889, 16999889, 2, 3, 3, DESCENDING
+		DESCENDING, 16998889, 16999889, 2, 3, 3
 	);
+
+	$success = [true, true];
+
+	echo '<div style="font-family: Consolas;">';
+	for (;;) {
+		$terminate = true;
+		for ($i = 0; $i < count($task); ++$i)
+			if ($success[$i] = $task[$i]->work())
+				$terminate = false;
+		if ($terminate)
+			break;
+	}
+	echo '<p>Done.</p>';
+	echo '</div>';
+}
+
+function post_content($url, $html, $ascending, $retry) {
+	echo '<details>';
+	printf('<summary>%s [%s] [%d] [%s]</summary>', $url, ($ascending) ? 'ASCENDING ' : 'DESCENDING', $retry, ($html) ? 'SUCCESS' : 'FAIL');
+	if ($html)
+		printf('<div style="%s">%s</div>', 'white-space: pre-wrap;', htmlspecialchars($html));
+	else
+		printf('<a href="%s">%s</a>', $url, $url);
+	echo '</details>';
+	ob_flush(); flush();
+}
+
+class crawl_queue {
+	public $urlf;
+	public $attempt;
+	public $cooldown;
+	public $job;
+
+	public $ascending;
+
+	public function __construct($urlf, $ascending, $lb, $ub, $margin, $attempt, $cooldown) {
+		assert($lb <= $ub && $margin >= 1 && $attempt >= 1 && $cooldown >= 0);
+
+		$this->urlf = $urlf;
+		$this->attempt = $attempt;
+		$this->cooldown = $cooldown;
+
+		/*
+		 * The number of attempts should always at least be 1,
+		 * and the first job will always be the major queue, therefore
+		 * it is guaranteed to exists.
+		 */
+		$this->job = [new major_queue($ascending, $lb, $ub, $margin)];
+		for ($i = 1; $i < $attempt; ++$i)
+			$this->job[] = new minor_queue();
+
+		$this->ascending = $ascending;
+	}
+
+	public function work() {
+		$active = false;
+		$id = null;
+
+		/*
+		 * Priority starts from the most attempt to the fewest.
+		 * This is to prevent the major queue to progress too
+		 * further from the minor queue, piling up reattempt that
+		 * never gets processed despite passing its schedule.
+		 */
+		for ($i = $this->attempt - 1; $i >= 0; --$i) {
+			if ($this->job[$i]->active())
+				$active = true;
+			$id = $this->job[$i]->pop();
+			if ($id)
+				break;
+		}
+		$retry = $i + 1;
+
+		if (!$id)
+			return $active;
+
+		$url = sprintf($this->urlf, $id);
+		$html = @file_get_contents($url);
+		$this->job[0]->status($id, (bool) $html);
+
+		/*
+		 * Only minor_queue has push, major_queue don't.
+		 *
+		 * When id isn't null, retry is guaranteed to at
+		 * least be 1. Otherwise, when retry is 0, id is
+		 * null and this code will not be reached.
+		 */
+		if (!$html && $retry < count($this->job))
+			$this->job[$retry]->push($id, time() + $this->cooldown);
+
+		post_content($url, $html, $this->ascending, $retry);
+
+		return true;
+	}
 }
 
 class major_queue {
@@ -29,7 +123,7 @@ class major_queue {
 	public $head;
 	public $fail;
 
-	public function __construct($lb, $ub, $margin, $ascending) {
+	public function __construct($ascending, $lb, $ub, $margin) {
 		$this->ascending = $ascending;
 		$this->lb = $lb;
 		$this->ub = $ub;
@@ -113,61 +207,6 @@ class minor_queue {
 	public function active() {
 		return count($this->queue) > 0;
 	}
-}
-
-function crawl($urlf, $lb, $ub, $margin, $attempt, $cooldown, $ascending) {
-	assert($lb <= $ub && $margin >= 1 && $attempt >= 1 && $cooldown >= 0);
-
-	/*
-	 * The number of attempts should always at least be 1,
-	 * and the first job will always be the major queue, therefore
-	 * it is guaranteed to exists.
-	 */
-	$job = [new major_queue($lb, $ub, $margin, $ascending)];
-	for ($i = 1; $i < $attempt; ++$i)
-		$job[] = new minor_queue();
-
-	while (true) {
-		$active = false;
-		$id = null;
-
-		/*
-		 * Priority starts from the most attempt to the fewest.
-		 * This is to prevent the major queue to progress too
-		 * further from the minor queue, piling up reattempt that
-		 * never gets processed despite passing its schedule.
-		 */
-		for ($i = $attempt - 1; $i >= 0; --$i) {
-			if ($job[$i]->active())
-				$active = true;
-			$id = $job[$i]->pop();
-			if ($id)
-				break;
-		}
-		$retry = $i + 1;
-
-		if (!$id) { if (!$active) break; else continue; }
-
-		$url = sprintf($urlf, $id);
-		$html = @file_get_contents($url);
-
-		$job[0]->status($id, (bool) $html);
-		if (!$html && $retry < count($job))
-			$job[$retry]->push($id, time() + $cooldown);
-
-		post_content($url, $retry, $html);
-	}
-}
-
-function post_content($url, $retry, $html) {
-	echo '<details>';
-	printf('<summary>%s [%d] [%s]</summary>', $url, $retry, ($html) ? 'SUCCESS' : 'FAIL');
-	if ($html)
-		printf('<div style="%s">%s</div>', 'white-space: pre-wrap;', htmlspecialchars($html));
-	else
-		printf('<a href="%s">%s</a>', $url, $url);
-	echo '</details>';
-	ob_flush(); flush();
 }
 
 main();

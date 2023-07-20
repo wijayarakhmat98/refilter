@@ -90,3 +90,39 @@ Sometimes, although the corresponding url of an id exists, due to various reason
           . |                                       STOP
 (delayed) n |         o             o           x x x ...
 ```
+
+# Interleaved
+
+In most cases, both the lower and upper boundaries are unknown. Given a known starting point, it is possible to use it to divide a maximum and minimum restriction into two subintervals, then performs a descending crawl towards the minimum and an ascending crawl towards the maximum from that starting point.
+
+```
+        [ min, ...                                 ..., max ]
+
+        [ min, ...     ..., x - 1 ]
+                            <<==@
+... x x | # x x x o o ... o o o @ | @ o o o ... o o x x x # | x x ...
+                                    @==>>
+                                  [ x, ...         ..., max ]
+```
+
+Note that, this means the two crawls are done consecutively. That is, for example, the descending crawl will be started only after the ascending crawl has finished. This is, however, rarely a desirable behavior.
+
+To balance the crawling process, an interleaved method is developed. Where, as the ids are incremented and decremented, after one fetch had been done by the ascending crawl one fetch will be done by the descending crawl before coming back for another fetch on the ascending crawl, and so on.
+
+This procedure also has the benefit of enabling to interleave many different crawl, not limited to just a pair of crawl from a single urls domain.
+
+```
+Domain a (ascending ) | ... x x x . . ... . . . . A A A A A A A A ... A A A x x x ...
+Domain a (descending) | ... x x x x a ... a a a a . . . . . . . . ... o o o x x x ...
+Domain b (ascending ) | ... x x x . . ... . . . . . . . . B B B B ... B x x x x x ...
+Domain b (descending) | ... x x x b b ... b b b b b b b b . . . . ... . . x x x x ...
+                      |--------------------------------------------------------------
+              Fetch 1 |                           A
+              Fetch 2 |                         a
+                    . |                                   B
+                    . |                                 b
+                    . |                             A
+                    . |                       a
+                    . |                                     B
+                    . |                               b
+```
