@@ -176,7 +176,7 @@ class major_queue {
 	}
 
 	public function active() {
-		return count($this->fail) < $this->margin;
+		return (($this->ascending) ? $this->head <= $this->ub : $this->head >= $this->lb) && count($this->fail) < $this->margin;
 	}
 }
 
