@@ -126,3 +126,20 @@ Domain b (descending) | ... x x x b b ... b b b b b b b b . . . . ... . . x x x 
                     . |                                     B
                     . |                               b
 ```
+
+# Rate
+
+When interleaving tasks, the starting point may be closer to the upper boundary than the lower boundary. Therefore, it makes sense to fetch more often from the descending crawl than the ascending crawl.
+
+```
+Domain a, ascent , rate 1 | ... x x x . . ... . . . . A A A A A A A A ... A A A x x x ...
+Domain b, descent, rate 2 | ... x x x b b ... b b b b b b b b . . . . ... . . x x x x ...
+                          |--------------------------------------------------------------
+                  Fetch 1 |                           A
+                  Fetch 2 |                                 b
+                        . |                               b
+                        . |                             A
+                        . |                             b
+                        . |                           b
+                        . |                               A
+```

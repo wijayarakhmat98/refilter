@@ -8,29 +8,21 @@ define('DESCENDING', false);
 function main() {
 	set_time_limit(MAX_EXECUTION_TIME);
 
-	$task = [];
+	$task = new interleave();
 
-	$task[] = new crawl_queue(
+	$task->add(5, new crawl_queue(
 		'https://sirup.lkpp.go.id/sirup/home/detailPaketPenyediaPublic2017/%d',
-		ASCENDING , 44023335, 44023345, 2, 3, 3
-	);
+		ASCENDING , 44023335, 44024335, 2, 3, 3
+	));
 
-	$task[] = new crawl_queue(
+	$task->add(1, new crawl_queue(
 		'https://sirup.lkpp.go.id/sirup/home/detailPaketPenyediaPublic2017/%d',
 		DESCENDING, 16998889, 16999889, 2, 3, 3
-	);
-
-	$success = [true, true];
+	));
 
 	echo '<div style="font-family: Consolas;">';
-	for (;;) {
-		$terminate = true;
-		for ($i = 0; $i < count($task); ++$i)
-			if ($success[$i] = $task[$i]->work())
-				$terminate = false;
-		if ($terminate)
-			break;
-	}
+	while ($task->work())
+		;
 	echo '<p>Done.</p>';
 	echo '</div>';
 }
@@ -44,6 +36,50 @@ function post_content($url, $html, $ascending, $retry) {
 		printf('<a href="%s">%s</a>', $url, $url);
 	echo '</details>';
 	ob_flush(); flush();
+}
+
+class interleave {
+	/* rate, task, and active are parallels */
+	public $rate = [];
+	public $task = [];
+	public $active = [];
+
+	public $pc = -1;
+	public $jmp = 0;
+
+	public function add($rate, $task) {
+		assert($rate > 0);
+
+		$this->rate[] = $rate;
+		$this->task[] = $task;
+		$this->active[] = true;
+	}
+
+	/* This is invalid until add() is called at least once. */
+	public function work() {
+		assert(count($this->task) > 0);
+
+		if ($this->jmp <= 0) {
+			for ($i = $this->pc + 1; ; ++$i) {
+				if ($i >= count($this->task))
+					$i = 0;
+				if ($this->active[$i])
+					break;
+				if ($i == $this->pc)
+					return false;
+			}
+			$this->pc = $i;
+			$this->jmp = $this->rate[$this->pc];
+		}
+
+		$this->active[$this->pc] = $this->task[$this->pc]->work();
+		--$this->jmp;
+
+		if (!$this->active[$this->pc])
+			$this->jmp = 0;
+
+		return true;
+	}
 }
 
 class crawl_queue {
@@ -181,6 +217,7 @@ class major_queue {
 }
 
 class minor_queue {
+	/* queue and time are parallels */
 	public $queue = [];
 	public $time = [];
 
