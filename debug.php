@@ -50,9 +50,12 @@ function debug4() {
 	$dbconn = pg_connect('user=postgres password=1234');
 	echo '<p>'; var_dump($dbconn); echo '</p>';
 
-	$result = pg_query_params($dbconn, 'SELECT current_database()', []);
+	$stmt = bin2hex(random_bytes(16));
+	$res = pg_prepare($dbconn, $stmt, 'select current_database()');
+	$res = pg_execute($dbconn, $stmt, []);
+
 	echo '<table>';
-	while ($line = pg_fetch_array($result, null, PGSQL_ASSOC)) {
+	while ($line = pg_fetch_array($res, null, PGSQL_ASSOC)) {
 		echo '<tr>';
 		foreach ($line as $col_value)
 			echo '<td>'.$col_value.'</td>';
@@ -60,18 +63,26 @@ function debug4() {
 	}
 	echo '</table>';
 
-	pg_free_result($result);
+	pg_free_result($res);
 	pg_close($dbconn);
 }
 
 /* Write to PostgreSQL */
 function debug5() {
-	$dbconn = pg_connect('user=postgres password=1234 dbname=test');
-	$res = pg_select($dbconn, 'test', ['id' => 0]);
+	$dbconn = pg_connect('dbname=test user=postgres password=1234');
+
+	$stmt1 = bin2hex(random_bytes(16));
+	$res = pg_prepare($dbconn, $stmt1, 'select * from test where id = $1');
+
+	$stmt2 = bin2hex(random_bytes(16));
+	$res = pg_prepare($dbconn, $stmt2, 'insert into test(id, content) values($1, $2)');
+
+	$res = pg_execute($dbconn, $stmt1, [0]);
 	if ($res !== false) {
+		$res = pg_fetch_all($res);
 		if (count($res) == 0) {
-			$res = pg_insert($dbconn, 'test', ['id' => 0, 'content' => 'abc']);
-			if ($res)
+			$res = pg_execute($dbconn, $stmt2, [0, 'abc']);
+			if ($res !== false)
 				echo '<p>Insert successful.</p>';
 			else
 				echo '<p>Insert failed.</p>';
@@ -87,33 +98,36 @@ function debug5() {
 
 /* PgSql\Result fetch */
 function debug6() {
-	$dbconn = pg_connect('user=postgres password=1234 dbname=test');
+	$dbconn = pg_connect('dbname=test user=postgres password=1234');
 
-	$res = pg_query_params($dbconn, 'select * from test', []);
+	$stmt = bin2hex(random_bytes(16));
+	$res = pg_prepare($dbconn, $stmt, 'select * from test');
+
+	$res = pg_execute($dbconn, $stmt, []);
 	echo '<h1>pg_fetch_all($res)</h1>';
 	echo '<p>'; var_dump(pg_fetch_all($res)); echo '</p>';
 
-	$res = pg_query_params($dbconn, 'select * from test', []);
+	$res = pg_execute($dbconn, $stmt, []);
 	echo '<h1>pg_fetch_array($res)</h1>';
 	echo '<p>'; var_dump(pg_fetch_array($res)); echo '</p>';
 
-	$res = pg_query_params($dbconn, 'select * from test', []);
+	$res = pg_execute($dbconn, $stmt, []);
 	echo '<h1>pg_fetch_row($res)</h1>';
 	echo '<p>'; var_dump(pg_fetch_row($res)); echo '</p>';
 
-	$res = pg_query_params($dbconn, 'select * from test', []);
+	$res = pg_execute($dbconn, $stmt, []);
 	echo '<h1>pg_fetch_assoc($res)</h1>';
 	echo '<p>'; var_dump(pg_fetch_assoc($res)); echo '</p>';
 
-	$res = pg_query_params($dbconn, 'select * from test', []);
+	$res = pg_execute($dbconn, $stmt, []);
 	echo '<h1>pg_fetch_object($res)</h1>';
 	echo '<p>'; var_dump(pg_fetch_object($res)); echo '</p>';
 
-	$res = pg_query_params($dbconn, 'select * from test', []);
+	$res = pg_execute($dbconn, $stmt, []);
 	echo '<h1>pg_fetch_result($res, 1, 0)</h1>';
 	echo '<p>'; var_dump(pg_fetch_result($res, 1, 0)); echo '</p>';
 
-	$res = pg_query_params($dbconn, 'select * from test', []);
+	$res = pg_execute($dbconn, $stmt, []);
 	echo '<h1>pg_fetch_all_columns($res, 1)</h1>';
 	echo '<p>'; var_dump(pg_fetch_all_columns($res, 1)); echo '</p>';
 }
