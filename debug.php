@@ -6,7 +6,8 @@ function main() {
 	// debug2();
 	// debug3();
 	// debug4();
-	debug5();
+	// debug5();
+	// debug6();
 }
 
 /* Content download */
@@ -82,6 +83,39 @@ function debug5() {
 	else {
 		echo '<p>Query failed.</p>';
 	}
+}
+
+/* PgSql\Result fetch */
+function debug6() {
+	$dbconn = pg_connect('user=postgres password=1234 dbname=test');
+
+	$res = pg_query_params($dbconn, 'select * from test', []);
+	echo '<h1>pg_fetch_all($res)</h1>';
+	echo '<p>'; var_dump(pg_fetch_all($res)); echo '</p>';
+
+	$res = pg_query_params($dbconn, 'select * from test', []);
+	echo '<h1>pg_fetch_array($res)</h1>';
+	echo '<p>'; var_dump(pg_fetch_array($res)); echo '</p>';
+
+	$res = pg_query_params($dbconn, 'select * from test', []);
+	echo '<h1>pg_fetch_row($res)</h1>';
+	echo '<p>'; var_dump(pg_fetch_row($res)); echo '</p>';
+
+	$res = pg_query_params($dbconn, 'select * from test', []);
+	echo '<h1>pg_fetch_assoc($res)</h1>';
+	echo '<p>'; var_dump(pg_fetch_assoc($res)); echo '</p>';
+
+	$res = pg_query_params($dbconn, 'select * from test', []);
+	echo '<h1>pg_fetch_object($res)</h1>';
+	echo '<p>'; var_dump(pg_fetch_object($res)); echo '</p>';
+
+	$res = pg_query_params($dbconn, 'select * from test', []);
+	echo '<h1>pg_fetch_result($res, 1, 0)</h1>';
+	echo '<p>'; var_dump(pg_fetch_result($res, 1, 0)); echo '</p>';
+
+	$res = pg_query_params($dbconn, 'select * from test', []);
+	echo '<h1>pg_fetch_all_columns($res, 1)</h1>';
+	echo '<p>'; var_dump(pg_fetch_all_columns($res, 1)); echo '</p>';
 }
 
 main();
