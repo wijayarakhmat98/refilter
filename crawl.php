@@ -8,23 +8,62 @@ define('DESCENDING', false);
 function main() {
 	set_time_limit(MAX_EXECUTION_TIME);
 
+	$dbconn = pg_connect('dbname=test user=postgres password=1234');
+
+	$db = [
+		'sirup_penyedia' => []
+	];
+
+	$db['sirup_penyedia']['select'] = new class($dbconn) {
+		public $stmt;
+		public function __construct(public $dbconn) {
+			$this->stmt = bin2hex(random_bytes(16));
+			pg_prepare($dbconn, $this->stmt, 'select id from sirup_penyedia where id = $1');
+		}
+		public function __invoke($id) {
+			$res = pg_execute($this->dbconn, $this->stmt, [$id]);
+			return ($res === false) ? null : count(pg_fetch_all($res)) > 0;
+		}
+	};
+
+	$db['sirup_penyedia']['insert'] = new class($dbconn) {
+		public $stmt;
+		public function __construct(public $dbconn) {
+			$this->stmt = bin2hex(random_bytes(16));
+			pg_prepare($dbconn, $this->stmt, 'insert into sirup_penyedia(id, content) values($1, $2)');
+		}
+		public function __invoke($id, $content) {
+			return pg_execute($this->dbconn, $this->stmt, [$id, $content]);
+		}
+	};
+
 	$task = new interleave();
 
 	$task->add(2, new crawl_queue(
 		'https://sirup.lkpp.go.id/sirup/home/detailPaketPenyediaPublic2017/%d',
-		new post_content(
-			'https://sirup.lkpp.go.id/sirup/home/detailPaketPenyediaPublic2017/%d',
-			ASCENDING
-		),
+		function ($id, $success, $content) use ($db) {
+			static $post = new post_content(
+				'https://sirup.lkpp.go.id/sirup/home/detailPaketPenyediaPublic2017/%d',
+				ASCENDING, 3
+			);
+			if ($success && !$db['sirup_penyedia']['select']($id))
+				$db['sirup_penyedia']['insert']($id, $content);
+			$post($id, $success, $content);
+		},
 		ASCENDING, 44023335, 44023345, 2, 3, 3
 	));
 
 	$task->add(2, new crawl_queue(
 		'https://sirup.lkpp.go.id/sirup/home/detailPaketPenyediaPublic2017/%d',
-		new post_content(
-			'https://sirup.lkpp.go.id/sirup/home/detailPaketPenyediaPublic2017/%d',
-			DESCENDING
-		),
+		function ($id, $success, $content) use ($db) {
+			static $post = new post_content(
+				'https://sirup.lkpp.go.id/sirup/home/detailPaketPenyediaPublic2017/%d',
+				DESCENDING, 3
+			);
+			if ($success && !$db['sirup_penyedia']['select']($id))
+				$db['sirup_penyedia']['insert']($id, $content);
+			$post($id, $success, $content);
+		},
 		DESCENDING, 16998889, 16999889, 2, 3, 3
 	));
 
@@ -38,12 +77,14 @@ function main() {
 class post_content {
 	public $urlf;
 	public $ascending;
+	public $attempt;
 	public $fail;
 
-	public function __construct($urlf, $ascending) {
+	public function __construct($urlf, $ascending, $attempt) {
 		$this->urlf = $urlf;
 		$this->ascending = ($ascending) ? '+++' : '---';
 		$this->fail = [];
+		$this->attempt = $attempt;
 	}
 
 	public function __invoke($id, $success, $content) {
@@ -62,6 +103,8 @@ class post_content {
 			printf('<a href="%s">%s</a>', $url, $url);
 		echo '</details>';
 		ob_flush(); flush();
+		if (!$success && $this->fail[$id] >= $this->attempt)
+			unset($this->fail[$id]);
 	}
 }
 
@@ -119,8 +162,6 @@ class crawl_queue {
 	public $cooldown;
 	public $job;
 
-	public $ascending;
-
 	public function __construct($urlf, $result_callback, $ascending, $lb, $ub, $margin, $attempt, $cooldown) {
 		assert($lb <= $ub && $margin >= 1 && $attempt >= 1 && $cooldown >= 0);
 
@@ -161,8 +202,7 @@ class crawl_queue {
 		if (!$id)
 			return $active;
 
-		$url = sprintf($this->urlf, $id);
-		$content = @file_get_contents($url);
+		$content = @file_get_contents(sprintf($this->urlf, $id));
 		$success = $content !== false;
 
 		$this->job[0]->status($id, $success);
