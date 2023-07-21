@@ -6,6 +6,7 @@ function main() {
 	// debug2();
 	// debug3();
 	// debug4();
+	debug5();
 }
 
 /* Content download */
@@ -45,14 +46,10 @@ function debug3() {
 
 /* Connect to PostgreSQL */
 function debug4() {
-	$dbconn = pg_connect("user=postgres password=1234");
-	echo '<p>';
-	var_dump($dbconn);
-	echo '</p>';
+	$dbconn = pg_connect('user=postgres password=1234');
+	echo '<p>'; var_dump($dbconn); echo '</p>';
 
-	$query = 'SELECT current_database()';
-	$result = pg_query($query);
-
+	$result = pg_query_params($dbconn, 'SELECT current_database()', []);
 	echo '<table>';
 	while ($line = pg_fetch_array($result, null, PGSQL_ASSOC)) {
 		echo '<tr>';
@@ -64,6 +61,27 @@ function debug4() {
 
 	pg_free_result($result);
 	pg_close($dbconn);
+}
+
+/* Write to PostgreSQL */
+function debug5() {
+	$dbconn = pg_connect('user=postgres password=1234 dbname=test');
+	$res = pg_select($dbconn, 'test', ['id' => 0]);
+	if ($res !== false) {
+		if (count($res) == 0) {
+			$res = pg_insert($dbconn, 'test', ['id' => 0, 'content' => 'abc']);
+			if ($res)
+				echo '<p>Insert successful.</p>';
+			else
+				echo '<p>Insert failed.</p>';
+		}
+		else {
+			echo '<p>Entry exists</p>';
+		}
+	}
+	else {
+		echo '<p>Query failed.</p>';
+	}
 }
 
 main();
