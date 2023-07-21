@@ -37,32 +37,61 @@ function main() {
 		}
 	};
 
+	$post_content = function ($url, $ascending, $trial, $success, $content) {
+		echo '<details>';
+		switch ($success) {
+		case 0:
+			$success = 'FAIL';
+			printf('<a href="%s">%s</a>', $url, $url);
+			break;
+		case 1:
+			$success = 'SUCCESS';
+			printf('<div style="%s">%s</div>', 'white-space: pre-wrap;', htmlspecialchars($content));
+			break;
+		case 2:
+			$success = 'EXISTS';
+			printf('<a href="%s">%s</a>', $url, $url);
+			break;
+		}
+		printf('<summary>%s [%s] [ %d ] [%s]</summary>', $url, ($ascending) ? '+++' : '---', $trial, $success);
+		echo '</details>';
+		ob_flush(); flush();
+	};
+
+	$fail = [
+		'sirup_penyedia' => new trial_count(3)
+	];
+
 	$task = new interleave();
 
-	$task->add(2, new crawl_queue(
+	$task->add(2, create_linear_crawl(
 		'https://sirup.lkpp.go.id/sirup/home/detailPaketPenyediaPublic2017/%d',
-		function ($id, $success, $content) use ($db) {
-			static $post = new post_content(
-				'https://sirup.lkpp.go.id/sirup/home/detailPaketPenyediaPublic2017/%d',
-				ASCENDING, 3
-			);
-			if ($success && !$db['sirup_penyedia']['select']($id))
+		function ($id) use ($db, $post_content, $fail) {
+			$exists = $db['sirup_penyedia']['select']($id);
+			if ($exists)
+				$post_content(sprintf('https://sirup.lkpp.go.id/sirup/home/detailPaketPenyediaPublic2017/%d', $id), ASCENDING, $fail['sirup_penyedia']($id, true), 2, null);
+			return $exists;
+		},
+		function ($id, $success, $content) use ($db, $post_content, $fail) {
+			if ($success)
 				$db['sirup_penyedia']['insert']($id, $content);
-			$post($id, $success, $content);
+			$post_content(sprintf('https://sirup.lkpp.go.id/sirup/home/detailPaketPenyediaPublic2017/%d', $id), ASCENDING, $fail['sirup_penyedia']($id, $success), $success, $content);
 		},
 		ASCENDING, 44023335, 44023345, 2, 3, 3
 	));
 
-	$task->add(2, new crawl_queue(
+	$task->add(2, create_linear_crawl(
 		'https://sirup.lkpp.go.id/sirup/home/detailPaketPenyediaPublic2017/%d',
-		function ($id, $success, $content) use ($db) {
-			static $post = new post_content(
-				'https://sirup.lkpp.go.id/sirup/home/detailPaketPenyediaPublic2017/%d',
-				DESCENDING, 3
-			);
-			if ($success && !$db['sirup_penyedia']['select']($id))
+		function ($id) use ($db, $post_content, $fail) {
+			$exists = $db['sirup_penyedia']['select']($id);
+			if ($exists)
+				$post_content(sprintf('https://sirup.lkpp.go.id/sirup/home/detailPaketPenyediaPublic2017/%d', $id), DESCENDING, $fail['sirup_penyedia']($id, true), 2, null);
+			return $exists;
+		},
+		function ($id, $success, $content) use ($db, $post_content, $fail) {
+			if ($success)
 				$db['sirup_penyedia']['insert']($id, $content);
-			$post($id, $success, $content);
+			$post_content(sprintf('https://sirup.lkpp.go.id/sirup/home/detailPaketPenyediaPublic2017/%d', $id), DESCENDING, $fail['sirup_penyedia']($id, $success), $success, $content);
 		},
 		DESCENDING, 16998889, 16999889, 2, 3, 3
 	));
@@ -74,38 +103,27 @@ function main() {
 	echo '</div>';
 }
 
-class post_content {
-	public $urlf;
-	public $ascending;
-	public $attempt;
-	public $fail;
-
-	public function __construct($urlf, $ascending, $attempt) {
-		$this->urlf = $urlf;
-		$this->ascending = ($ascending) ? '+++' : '---';
-		$this->fail = [];
-		$this->attempt = $attempt;
-	}
-
-	public function __invoke($id, $success, $content) {
-		$url = sprintf($this->urlf, $id);
-		$trial = 1;
-		if (!$success) {
-			if (!array_key_exists($id, $this->fail))
-				$this->fail[$id] = 0;
-			$trial = ++$this->fail[$id];
-		}
-		echo '<details>';
-		printf('<summary>%s [%s] [ %d ] [%s]</summary>', $url, $this->ascending, $trial, ($success) ? 'SUCCESS' : 'FAIL');
-		if ($success)
-			printf('<div style="%s">%s</div>', 'white-space: pre-wrap;', htmlspecialchars($content));
-		else
-			printf('<a href="%s">%s</a>', $url, $url);
-		echo '</details>';
-		ob_flush(); flush();
-		if (!$success && $this->fail[$id] >= $this->attempt)
+class trial_count {
+	public $fail = [];
+	public function __construct(public $attempt) {}
+	public function __invoke($id, $success) {
+		if (!array_key_exists($id, $this->fail))
+			$this->fail[$id] = 0;
+		$trial = ++$this->fail[$id];
+		if ($success || $this->fail[$id] >= $this->attempt)
 			unset($this->fail[$id]);
+		return $trial;
 	}
+}
+
+function create_linear_crawl($urlf, $exists_callback, $result_callback, $ascending, $lb, $ub, $margin, $attempt, $cooldown) {
+	assert($lb <= $ub && $margin >= 1 && $attempt >= 1 && $cooldown >= 0);
+
+	$job = [new generator_queue($ascending, $lb, $ub, $margin)];
+	for ($i = 1; $i < $attempt; ++$i)
+		$job[] = new attempt_queue();
+
+	return new crawl_queue($urlf, $exists_callback, $result_callback, $job, true, $cooldown);
 }
 
 class interleave {
@@ -153,44 +171,27 @@ class interleave {
 }
 
 /*
+ * exists_callback($id)
  * result_callback($id, $success, $content)
+ *
+ * Never push to the first queue.
+ * push($id, $timestamp)
  */
 class crawl_queue {
-	public $urlf;
-	public $result_callback;
-	public $attempt;
-	public $cooldown;
-	public $job;
-
-	public function __construct($urlf, $result_callback, $ascending, $lb, $ub, $margin, $attempt, $cooldown) {
-		assert($lb <= $ub && $margin >= 1 && $attempt >= 1 && $cooldown >= 0);
-
-		$this->urlf = $urlf;
-		$this->result_callback = $result_callback;
-		$this->attempt = $attempt;
-		$this->cooldown = $cooldown;
-
-		/*
-		 * The number of attempts should always at least be 1,
-		 * and the first job will always be the major queue, therefore
-		 * it is guaranteed to exists.
-		 */
-		$this->job = [new major_queue($ascending, $lb, $ub, $margin)];
-		for ($i = 1; $i < $attempt; ++$i)
-			$this->job[] = new minor_queue();
-	}
+	public function __construct(
+		public $urlf,
+		public $exists_callback,
+		public $result_callback,
+		public $job,
+		public $require_status,
+		public $cooldown
+	) {}
 
 	public function work() {
 		$active = false;
 		$id = null;
 
-		/*
-		 * Priority starts from the most attempt to the fewest.
-		 * This is to prevent the major queue to progress too
-		 * further from the minor queue, piling up reattempt that
-		 * never gets processed despite passing its schedule.
-		 */
-		for ($i = $this->attempt - 1; $i >= 0; --$i) {
+		for ($i = count($this->job) - 1; $i >= 0; --$i) {
 			if ($this->job[$i]->active())
 				$active = true;
 			$id = $this->job[$i]->pop();
@@ -202,28 +203,23 @@ class crawl_queue {
 		if (!$id)
 			return $active;
 
-		$content = @file_get_contents(sprintf($this->urlf, $id));
-		$success = $content !== false;
-
-		$this->job[0]->status($id, $success);
-
-		/*
-		 * Only minor_queue has push, major_queue don't.
-		 *
-		 * When id isn't null, retry is guaranteed to at
-		 * least be 1. Otherwise, when retry is 0, id is
-		 * null and this code will not be reached.
-		 */
-		if (!$success && $retry < $this->attempt)
-			$this->job[$retry]->push($id, time() + $this->cooldown);
-
-		($this->result_callback)($id, $success, $content);
-
+		$exists = ($this->exists_callback)($id);
+		$success = true;
+		if (!$exists) {
+			$content = @file_get_contents(sprintf($this->urlf, $id));
+			$success = $content !== false;
+			if (!$success && $retry < count($this->job))
+				$this->job[$retry]->push($id, time() + $this->cooldown);
+		}
+		if ($this->require_status)
+			$this->job[0]->status($id, $success);
+		if (!$exists)
+			($this->result_callback)($id, $success, $content);
 		return true;
 	}
 }
 
-class major_queue {
+class generator_queue {
 	public $ascending;
 	public $lb;
 	public $ub;
@@ -288,7 +284,7 @@ class major_queue {
 	}
 }
 
-class minor_queue {
+class attempt_queue {
 	/* queue and time are parallels */
 	public $queue = [];
 	public $time = [];
