@@ -64,6 +64,14 @@ function main() {
 
 	$task = new interleave();
 
+	$holes = [];
+
+	list($holes_part, $lb, $ub) = linear_bound(44023335, 44023345, 2, ASCENDING, $db['sirup_penyedia']['select']);
+	array_push($holes, ...$holes_part);
+
+	echo '<p>'; var_dump($holes_part); echo '</p>';
+	printf('<p>lb: %d, ub: %d</p>', $lb, $ub);
+
 	$task->add(2, linear_crawl(
 		'https://sirup.lkpp.go.id/sirup/home/detailPaketPenyediaPublic2017/%d',
 		$db['sirup_penyedia']['select'],
@@ -72,8 +80,14 @@ function main() {
 				$db['sirup_penyedia']['insert']($id, $content);
 			$post_content(sprintf('https://sirup.lkpp.go.id/sirup/home/detailPaketPenyediaPublic2017/%d', $id), ASCENDING, $fail['sirup_penyedia']($id, $status != FAIL), $status, $content);
 		},
-		ASCENDING, 44023335, 44023345, 2, 3, 3
+		ASCENDING, $lb, $ub, 2, 3, 3
 	));
+
+	list($holes_part, $lb, $ub) = linear_bound(16998889, 16999889, 2, DESCENDING, $db['sirup_penyedia']['select']);
+	array_push($holes, ...$holes_part);
+
+	echo '<p>'; var_dump($holes_part); echo '</p>';
+	printf('<p>lb: %d, ub: %d</p>', $lb, $ub);
 
 	$task->add(2, linear_crawl(
 		'https://sirup.lkpp.go.id/sirup/home/detailPaketPenyediaPublic2017/%d',
@@ -83,7 +97,7 @@ function main() {
 				$db['sirup_penyedia']['insert']($id, $content);
 			$post_content(sprintf('https://sirup.lkpp.go.id/sirup/home/detailPaketPenyediaPublic2017/%d', $id), DESCENDING, $fail['sirup_penyedia']($id, $status != FAIL), $status, $content);
 		},
-		DESCENDING, 16998889, 16999889, 2, 3, 3
+		DESCENDING, $lb, $ub, 2, 3, 3
 	));
 
 	echo '<div style="font-family: Consolas;">';
@@ -150,8 +164,49 @@ class interleave {
 	}
 }
 
+function linear_bound($lb, $ub, $margin, $ascending, $exists_callback) {
+	assert($margin >= 0);
+	$holes = [];
+	$fail = [];
+	if ($ascending) {
+		for ($id = $lb; $id <= $ub; ++$id)
+			if ($exists_callback($id)) {
+				array_push($holes, ...$fail);
+				$fail = [];
+				$lb = $id + 1;
+			}
+			else {
+				$fail[] = $id;
+				if (count($fail) >= $margin)
+					break;
+			}
+		if ($id > $ub) {
+			array_push($holes, ...$fail);
+			$lb = $id;
+		}
+	}
+	else {
+		for ($id = $ub; $id >= $lb; --$id)
+			if ($exists_callback($id)) {
+				array_push($holes, ...$fail);
+				$fail = [];
+				$ub = $id - 1;
+			}
+			else {
+				$fail[] = $id;
+				if (count($fail) >= $margin)
+					break;
+			}
+		if ($id < $lb) {
+			array_push($holes, ...$fail);
+			$ub = $id;
+		}
+	}
+	return [$holes, $lb, $ub];
+}
+
 function linear_crawl($urlf, $exists_callback, $result_callback, $ascending, $lb, $ub, $margin, $attempt, $cooldown) {
-	assert($lb <= $ub && $margin >= 1 && $attempt >= 1 && $cooldown >= 0);
+	assert($margin >= 1 && $attempt >= 1 && $cooldown >= 0);
 
 	$job = [new generator_queue($ascending, $lb, $ub, $margin)];
 	for ($i = 1; $i < $attempt; ++$i)
