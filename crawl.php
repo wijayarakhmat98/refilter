@@ -1,117 +1,25 @@
 <?php
 
-define('MAX_EXECUTION_TIME', 3 * 24 * 60 * 60);
-
-define('ASCENDING' , true );
-define('DESCENDING', false);
-
-function main() {
-	set_time_limit(MAX_EXECUTION_TIME);
-
-	$dbconn = pg_connect('dbname=test user=postgres password=1234');
-
-	$db = [
-		'sirup_penyedia' => []
-	];
-
-	$db['sirup_penyedia']['select'] = new class($dbconn) {
-		public $stmt;
-		public function __construct(public $dbconn) {
-			$this->stmt = bin2hex(random_bytes(16));
-			pg_prepare($dbconn, $this->stmt, 'select id from sirup_penyedia where id = $1');
-		}
-		public function __invoke($id) {
-			$res = pg_execute($this->dbconn, $this->stmt, [$id]);
-			return ($res === false) ? null : count(pg_fetch_all($res)) > 0;
-		}
-	};
-
-	$db['sirup_penyedia']['insert'] = new class($dbconn) {
-		public $stmt;
-		public function __construct(public $dbconn) {
-			$this->stmt = bin2hex(random_bytes(16));
-			pg_prepare($dbconn, $this->stmt, 'insert into sirup_penyedia(id, content) values($1, $2)');
-		}
-		public function __invoke($id, $content) {
-			return pg_execute($this->dbconn, $this->stmt, [$id, $content]);
-		}
-	};
-
-	$post_content = function ($url, $type, $trial, $status, $content) {
-		echo '<details>';
-		switch ($status) {
-		case FAIL:
-			$status = 'FAIL';
-			printf('<a href="%s"><p>%s</p></a>', $url, $url);
-			break;
-		case SUCCESS:
-			$status = 'SUCCESS';
-			printf('<div style="%s"><p>%s</p></div>', 'white-space: pre-wrap;', htmlspecialchars($content));
-			break;
-		case EXISTS:
-			$status = 'EXISTS';
-			printf('<p>Please refer to database.</p>', $url, $url);
-			break;
-		}
-		printf('<summary>%s %s [ %d ] [%s]</summary>', $url, $type, $trial, $status);
-		echo '</details>';
-		ob_flush(); flush();
-	};
-
-	$fail = [
-		'sirup_penyedia' => new trial_count(3)
-	];
-
-	$res_call = function ($type, $id, $status, $content) use ($db, $post_content, $fail) {
-		if ($status == SUCCESS)
-			$db['sirup_penyedia']['insert']($id, $content);
-		$post_content(sprintf('https://sirup.lkpp.go.id/sirup/home/detailPaketPenyediaPublic2017/%d', $id), $type, $fail['sirup_penyedia']($id, $status != FAIL), $status, $content);
-	};
-
-	$task = new interleave();
-
-	list($holes, $lb, $ub) = linear_bound(44023335, 44023345, 2, ASCENDING, $db['sirup_penyedia']['select']);
-	echo '<p>'; var_dump($holes); echo '</p>';
-	printf('<p>lb: %d, ub: %d</p>', $lb, $ub);
-
-	$task->add(2, linear_crawl(
-		'https://sirup.lkpp.go.id/sirup/home/detailPaketPenyediaPublic2017/%d',
-		$db['sirup_penyedia']['select'],
-		function ($x, $y, $z) use ($res_call) { $res_call('[ L ] [+++]', $x, $y, $z); },
-		ASCENDING, $lb, $ub, 2, 3, 3
-	));
-
-	$task->add(1, set_crawl(
-		'https://sirup.lkpp.go.id/sirup/home/detailPaketPenyediaPublic2017/%d',
-		$db['sirup_penyedia']['select'],
-		function ($x, $y, $z) use ($res_call) { $res_call('[ s ] [+++]', $x, $y, $z); },
-		$holes, 3, 3
-	));
-
-	list($holes, $lb, $ub) = linear_bound(16998889, 16999889, 2, DESCENDING, $db['sirup_penyedia']['select']);
-	echo '<p>'; var_dump($holes); echo '</p>';
-	printf('<p>lb: %d, ub: %d</p>', $lb, $ub);
-
-	$task->add(2, linear_crawl(
-		'https://sirup.lkpp.go.id/sirup/home/detailPaketPenyediaPublic2017/%d',
-		$db['sirup_penyedia']['select'],
-		function ($x, $y, $z) use ($res_call) { $res_call('[ L ] [---]', $x, $y, $z); },
-		DESCENDING, $lb, $ub, 2, 3, 3
-	));
-
-	$task->add(1, set_crawl(
-		'https://sirup.lkpp.go.id/sirup/home/detailPaketPenyediaPublic2017/%d',
-		$db['sirup_penyedia']['select'],
-		function ($x, $y, $z) use ($res_call) { $res_call('[ s ] [---]', $x, $y, $z); },
-		$holes, 3, 3
-	));
-
-	echo '<div style="font-family: Consolas;">';
-	while ($task->work())
-		;
-	echo '<p>Done.</p>';
-	echo '</div>';
-}
+function post_content ($url, $type, $trial, $status, $content) {
+	echo '<details>';
+	switch ($status) {
+	case FAIL:
+		$status = 'FAIL';
+		printf('<a href="%s"><p>%s</p></a>', $url, $url);
+		break;
+	case SUCCESS:
+		$status = 'SUCCESS';
+		printf('<div style="%s"><p>%s</p></div>', 'white-space: pre-wrap;', htmlspecialchars($content));
+		break;
+	case EXISTS:
+		$status = 'EXISTS';
+		printf('<p>Please refer to database.</p>', $url, $url);
+		break;
+	}
+	printf('<summary>%s %s [ %d ] [%s]</summary>', $url, $type, $trial, $status);
+	echo '</details>';
+	ob_flush(); flush();
+};
 
 class trial_count {
 	public $fail = [];
@@ -124,6 +32,146 @@ class trial_count {
 			unset($this->fail[$id]);
 		return $trial;
 	}
+}
+
+class insert_post {
+	public function __construct(public $type, public $insert, public $fail, public $urlf) {}
+	public function __invoke($id, $status, $content) {
+		if ($status == SUCCESS)
+			($this->insert)($id, $content);
+		post_content(sprintf($this->urlf, $id), $this->type, ($this->fail)($id, $status != FAIL), $status, $content);
+	}
+}
+
+define('MAX_EXECUTION_TIME', 3 * 24 * 60 * 60);
+
+define('ASCENDING' , true );
+define('DESCENDING', false);
+
+function main() {
+	$ini_array = parse_ini_file("crawl.ini", true, INI_SCANNER_TYPED);
+
+	$max_execution_time = $ini_array['max_execution_time'];
+	set_time_limit($max_execution_time);
+
+	$dbname = $ini_array['dbname'];
+	$user = $ini_array['user'];
+	$password = $ini_array['password'];
+	$dbconn = pg_connect(sprintf('dbname=%s user=%s password=%s', $dbname, $user, $password));
+
+	$db = [];
+	$task = new interleave();
+	$fail = [];
+
+	echo '<div style="font-family: Consolas;">';
+
+	foreach (array_keys($ini_array) as $urlf) {
+		$conf = $ini_array[$urlf];
+
+		if (!is_array($conf))
+			continue;
+
+		$table = $conf['table'];
+
+		$db[$table] = [];
+
+		$db[$table]['select'] = new class($dbconn, $table) {
+			public $stmt;
+			public function __construct(public $dbconn, public $table) {
+				$this->stmt = bin2hex(random_bytes(16));
+				pg_prepare($dbconn, $this->stmt, sprintf('select id from %s where id = $1', $table));
+			}
+			public function __invoke($id) {
+				$res = pg_execute($this->dbconn, $this->stmt, [$id]);
+				return ($res === false) ? null : count(pg_fetch_all($res)) > 0;
+			}
+		};
+
+		$db[$table]['insert'] = new class($dbconn, $table) {
+			public $stmt;
+			public function __construct(public $dbconn, public $table) {
+				$this->stmt = bin2hex(random_bytes(16));
+				pg_prepare($dbconn, $this->stmt, sprintf('insert into %s(id, content) values($1, $2)', $table));
+			}
+			public function __invoke($id, $content) {
+				return pg_execute($this->dbconn, $this->stmt, [$id, $content]);
+			}
+		};
+
+		$fail[$table] = new trial_count($conf['attempt']);
+
+		list($holes, $lb, $ub) = linear_bound($conf['start'], $conf['ub'], $conf['margin'], ASCENDING, $db[$table]['select']);
+		printf(
+			'<details>
+				<summary>%s<p>start: %d, lb: %d, ub: %d</p></summary>
+				<div style="white-space: pre-wrap;"><p>',
+			$urlf, $conf['start'], $lb, $ub
+		);
+		var_dump($holes);
+		printf(
+				'</p></div>
+			</details>'
+		);
+		ob_flush(); flush();
+
+		$task->add($conf['weight.asc'], linear_crawl(
+			$urlf, $db[$table]['select'],
+			new insert_post('[ G ] [+++]', $db[$table]['insert'], $fail[$table], $urlf),
+			ASCENDING,
+			$lb,
+			$ub,
+			$conf['margin'],
+			$conf['attempt'],
+			$conf['cooldown']
+		));
+
+		$task->add($conf['weight.ret'], set_crawl($urlf,
+			$db[$table]['select'],
+			new insert_post('[ s ] [+++]', $db[$table]['insert'], $fail[$table], $urlf),
+			$holes,
+			$conf['attempt'],
+			$conf['cooldown']
+		));
+
+		list($holes, $lb, $ub) = linear_bound($conf['lb'], $conf['start'] - 1, $conf['margin'], DESCENDING, $db[$table]['select']);
+		printf(
+			'<details>
+				<summary>%s<p>start: %d, lb: %d, ub: %d</p></summary>
+				<div style="white-space: pre-wrap;"><p>',
+			$urlf, $conf['start'] - 1, $lb, $ub
+		);
+		var_dump($holes);
+		printf(
+				'</p></div>
+			</details>'
+		);
+		ob_flush(); flush();
+
+		$task->add($conf['weight.dsc'], linear_crawl($urlf,
+			$db[$table]['select'],
+			new insert_post('[ G ] [---]', $db[$table]['insert'], $fail[$table], $urlf),
+			DESCENDING,
+			$lb,
+			$ub,
+			$conf['margin'],
+			$conf['attempt'],
+			$conf['cooldown']
+		));
+
+		$task->add($conf['weight.ret'], set_crawl($urlf,
+			$db[$table]['select'],
+			new insert_post('[ s ] [---]', $db[$table]['insert'], $fail[$table], $urlf),
+			$holes,
+			$conf['attempt'],
+			$conf['cooldown']
+		));
+	}
+
+	while ($task->work())
+		;
+	echo '<p>Done.</p>';
+
+	echo '</div>';
 }
 
 class interleave {
