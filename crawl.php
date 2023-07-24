@@ -37,23 +37,23 @@ function main() {
 		}
 	};
 
-	$post_content = function ($url, $ascending, $trial, $success, $content) {
+	$post_content = function ($url, $ascending, $trial, $status, $content) {
 		echo '<details>';
-		switch ($success) {
-		case 0:
-			$success = 'FAIL';
+		switch ($status) {
+		case FAIL:
+			$status = 'FAIL';
 			printf('<a href="%s">%s</a>', $url, $url);
 			break;
-		case 1:
-			$success = 'SUCCESS';
+		case SUCCESS:
+			$status = 'SUCCESS';
 			printf('<div style="%s">%s</div>', 'white-space: pre-wrap;', htmlspecialchars($content));
 			break;
-		case 2:
-			$success = 'EXISTS';
-			printf('<a href="%s">%s</a>', $url, $url);
+		case EXISTS:
+			$status = 'EXISTS';
+			printf('<p>Please refer to database.</p>', $url, $url);
 			break;
 		}
-		printf('<summary>%s [%s] [ %d ] [%s]</summary>', $url, ($ascending) ? '+++' : '---', $trial, $success);
+		printf('<summary>%s [%s] [ %d ] [%s]</summary>', $url, ($ascending) ? '+++' : '---', $trial, $status);
 		echo '</details>';
 		ob_flush(); flush();
 	};
@@ -64,34 +64,24 @@ function main() {
 
 	$task = new interleave();
 
-	$task->add(2, create_linear_crawl(
+	$task->add(2, linear_crawl(
 		'https://sirup.lkpp.go.id/sirup/home/detailPaketPenyediaPublic2017/%d',
-		function ($id) use ($db, $post_content, $fail) {
-			$exists = $db['sirup_penyedia']['select']($id);
-			if ($exists)
-				$post_content(sprintf('https://sirup.lkpp.go.id/sirup/home/detailPaketPenyediaPublic2017/%d', $id), ASCENDING, $fail['sirup_penyedia']($id, true), 2, null);
-			return $exists;
-		},
-		function ($id, $success, $content) use ($db, $post_content, $fail) {
-			if ($success)
+		$db['sirup_penyedia']['select'],
+		function ($id, $status, $content) use ($db, $post_content, $fail) {
+			if ($status == SUCCESS)
 				$db['sirup_penyedia']['insert']($id, $content);
-			$post_content(sprintf('https://sirup.lkpp.go.id/sirup/home/detailPaketPenyediaPublic2017/%d', $id), ASCENDING, $fail['sirup_penyedia']($id, $success), $success, $content);
+			$post_content(sprintf('https://sirup.lkpp.go.id/sirup/home/detailPaketPenyediaPublic2017/%d', $id), ASCENDING, $fail['sirup_penyedia']($id, $status != FAIL), $status, $content);
 		},
 		ASCENDING, 44023335, 44023345, 2, 3, 3
 	));
 
-	$task->add(2, create_linear_crawl(
+	$task->add(2, linear_crawl(
 		'https://sirup.lkpp.go.id/sirup/home/detailPaketPenyediaPublic2017/%d',
-		function ($id) use ($db, $post_content, $fail) {
-			$exists = $db['sirup_penyedia']['select']($id);
-			if ($exists)
-				$post_content(sprintf('https://sirup.lkpp.go.id/sirup/home/detailPaketPenyediaPublic2017/%d', $id), DESCENDING, $fail['sirup_penyedia']($id, true), 2, null);
-			return $exists;
-		},
-		function ($id, $success, $content) use ($db, $post_content, $fail) {
-			if ($success)
+		$db['sirup_penyedia']['select'],
+		function ($id, $status, $content) use ($db, $post_content, $fail) {
+			if ($status == SUCCESS)
 				$db['sirup_penyedia']['insert']($id, $content);
-			$post_content(sprintf('https://sirup.lkpp.go.id/sirup/home/detailPaketPenyediaPublic2017/%d', $id), DESCENDING, $fail['sirup_penyedia']($id, $success), $success, $content);
+			$post_content(sprintf('https://sirup.lkpp.go.id/sirup/home/detailPaketPenyediaPublic2017/%d', $id), DESCENDING, $fail['sirup_penyedia']($id, $status != FAIL), $status, $content);
 		},
 		DESCENDING, 16998889, 16999889, 2, 3, 3
 	));
@@ -114,16 +104,6 @@ class trial_count {
 			unset($this->fail[$id]);
 		return $trial;
 	}
-}
-
-function create_linear_crawl($urlf, $exists_callback, $result_callback, $ascending, $lb, $ub, $margin, $attempt, $cooldown) {
-	assert($lb <= $ub && $margin >= 1 && $attempt >= 1 && $cooldown >= 0);
-
-	$job = [new generator_queue($ascending, $lb, $ub, $margin)];
-	for ($i = 1; $i < $attempt; ++$i)
-		$job[] = new attempt_queue();
-
-	return new crawl_queue($urlf, $exists_callback, $result_callback, $job, true, $cooldown);
 }
 
 class interleave {
@@ -170,20 +150,38 @@ class interleave {
 	}
 }
 
+function linear_crawl($urlf, $exists_callback, $result_callback, $ascending, $lb, $ub, $margin, $attempt, $cooldown) {
+	assert($lb <= $ub && $margin >= 1 && $attempt >= 1 && $cooldown >= 0);
+
+	$job = [new generator_queue($ascending, $lb, $ub, $margin)];
+	for ($i = 1; $i < $attempt; ++$i)
+		$job[] = new attempt_queue();
+
+	$result_callback = function ($id, $status, $content) use ($job, $result_callback) {
+		$job[0]->status($id, $status != FAIL);
+		$result_callback($id, $status, $content);
+	};
+
+	return new queue_manager($urlf, $exists_callback, $result_callback, $job, $cooldown);
+}
+
+define('FAIL'   , 0);
+define('SUCCESS', 1);
+define('EXISTS' , 2);
+
 /*
  * exists_callback($id)
- * result_callback($id, $success, $content)
+ * result_callback($id, $status, $content)
  *
- * Never push to the first queue.
- * push($id, $timestamp)
+ * Queue must have pop() and active().
+ * Non-first queue must have push($id, $timestamp).
  */
-class crawl_queue {
+class queue_manager {
 	public function __construct(
 		public $urlf,
 		public $exists_callback,
 		public $result_callback,
 		public $job,
-		public $require_status,
 		public $cooldown
 	) {}
 
@@ -203,22 +201,29 @@ class crawl_queue {
 		if (!$id)
 			return $active;
 
-		$exists = ($this->exists_callback)($id);
-		$success = true;
-		if (!$exists) {
-			$content = @file_get_contents(sprintf($this->urlf, $id));
-			$success = $content !== false;
-			if (!$success && $retry < count($this->job))
-				$this->job[$retry]->push($id, time() + $this->cooldown);
+		if (($this->exists_callback)($id)) {
+			($this->result_callback)($id, EXISTS, null);
 		}
-		if ($this->require_status)
-			$this->job[0]->status($id, $success);
-		if (!$exists)
-			($this->result_callback)($id, $success, $content);
+		else {
+			$content = @file_get_contents(sprintf($this->urlf, $id));
+			if ($content === false) {
+				if ($retry < count($this->job))
+					$this->job[$retry]->push($id, time() + $this->cooldown);
+				($this->result_callback)($id, FAIL, null);
+			}
+			else {
+				($this->result_callback)($id, SUCCESS, $content);
+			}
+		}
 		return true;
 	}
 }
 
+/*
+ * status($id, $success) must be called
+ * to both move the head and manage the
+ * internal margin state.
+ */
 class generator_queue {
 	public $ascending;
 	public $lb;
