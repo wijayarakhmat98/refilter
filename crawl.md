@@ -143,3 +143,43 @@ Domain b, descent, rate 2 | ... x x x b b ... b b b b b b b b . . . . ... . . x 
                         . |                           b
                         . |                               A
 ```
+
+# Resume strategy
+
+A process can be terminated, and then restarted. It may be desirable to jump from the starting point to the last valid point.
+
+A process can be restart at a different time. It may be desirable to reattempt fetching contents that had previously failed.
+
+Either way, a strategy that may be employed is to separate the contents that are about to be crawled and the content that have been crawled.
+
+The input interval will be processed producing, a new interval with bounds that contains contents that haven't been crawled, and, the holes that exists within the contents that have been crawled.
+
+It is then a business decision on what to do on these two separate contents. For the first scenario, we may ignore the holes. For the second scenario, we may ignore the new bounds. It is also possible to process both.
+
+## Previous process
+
+```
+            @==>>             Terminate
+... o o x | @ o o x x o o x o @   o o x o o x o x o o o x x x x ... x x # | x x ...
+```
+
+## Resume process
+
+### Content
+
+```
+          [ o o o     o o   o o ]
+```
+
+### Holes
+
+```
+                [ x x     x ]
+```
+
+### Bound
+
+```
+... o o x   o o o x x o o x o o | @ o x o o x o x o o o x x x x ... x x # | x x ...
+                                  @==>>
+```

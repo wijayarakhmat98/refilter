@@ -37,23 +37,23 @@ function main() {
 		}
 	};
 
-	$post_content = function ($url, $ascending, $trial, $status, $content) {
+	$post_content = function ($url, $type, $trial, $status, $content) {
 		echo '<details>';
 		switch ($status) {
 		case FAIL:
 			$status = 'FAIL';
-			printf('<a href="%s">%s</a>', $url, $url);
+			printf('<a href="%s"><p>%s</p></a>', $url, $url);
 			break;
 		case SUCCESS:
 			$status = 'SUCCESS';
-			printf('<div style="%s">%s</div>', 'white-space: pre-wrap;', htmlspecialchars($content));
+			printf('<div style="%s"><p>%s</p></div>', 'white-space: pre-wrap;', htmlspecialchars($content));
 			break;
 		case EXISTS:
 			$status = 'EXISTS';
 			printf('<p>Please refer to database.</p>', $url, $url);
 			break;
 		}
-		printf('<summary>%s [%s] [ %d ] [%s]</summary>', $url, ($ascending) ? '+++' : '---', $trial, $status);
+		printf('<summary>%s %s [ %d ] [%s]</summary>', $url, $type, $trial, $status);
 		echo '</details>';
 		ob_flush(); flush();
 	};
@@ -62,42 +62,48 @@ function main() {
 		'sirup_penyedia' => new trial_count(3)
 	];
 
+	$res_call = function ($type, $id, $status, $content) use ($db, $post_content, $fail) {
+		if ($status == SUCCESS)
+			$db['sirup_penyedia']['insert']($id, $content);
+		$post_content(sprintf('https://sirup.lkpp.go.id/sirup/home/detailPaketPenyediaPublic2017/%d', $id), $type, $fail['sirup_penyedia']($id, $status != FAIL), $status, $content);
+	};
+
 	$task = new interleave();
 
-	$holes = [];
-
-	list($holes_part, $lb, $ub) = linear_bound(44023335, 44023345, 2, ASCENDING, $db['sirup_penyedia']['select']);
-	array_push($holes, ...$holes_part);
-
-	echo '<p>'; var_dump($holes_part); echo '</p>';
+	list($holes, $lb, $ub) = linear_bound(44023335, 44023345, 2, ASCENDING, $db['sirup_penyedia']['select']);
+	echo '<p>'; var_dump($holes); echo '</p>';
 	printf('<p>lb: %d, ub: %d</p>', $lb, $ub);
 
 	$task->add(2, linear_crawl(
 		'https://sirup.lkpp.go.id/sirup/home/detailPaketPenyediaPublic2017/%d',
 		$db['sirup_penyedia']['select'],
-		function ($id, $status, $content) use ($db, $post_content, $fail) {
-			if ($status == SUCCESS)
-				$db['sirup_penyedia']['insert']($id, $content);
-			$post_content(sprintf('https://sirup.lkpp.go.id/sirup/home/detailPaketPenyediaPublic2017/%d', $id), ASCENDING, $fail['sirup_penyedia']($id, $status != FAIL), $status, $content);
-		},
+		function ($x, $y, $z) use ($res_call) { $res_call('[ L ] [+++]', $x, $y, $z); },
 		ASCENDING, $lb, $ub, 2, 3, 3
 	));
 
-	list($holes_part, $lb, $ub) = linear_bound(16998889, 16999889, 2, DESCENDING, $db['sirup_penyedia']['select']);
-	array_push($holes, ...$holes_part);
+	$task->add(1, set_crawl(
+		'https://sirup.lkpp.go.id/sirup/home/detailPaketPenyediaPublic2017/%d',
+		$db['sirup_penyedia']['select'],
+		function ($x, $y, $z) use ($res_call) { $res_call('[ s ] [+++]', $x, $y, $z); },
+		$holes, 3, 3
+	));
 
-	echo '<p>'; var_dump($holes_part); echo '</p>';
+	list($holes, $lb, $ub) = linear_bound(16998889, 16999889, 2, DESCENDING, $db['sirup_penyedia']['select']);
+	echo '<p>'; var_dump($holes); echo '</p>';
 	printf('<p>lb: %d, ub: %d</p>', $lb, $ub);
 
 	$task->add(2, linear_crawl(
 		'https://sirup.lkpp.go.id/sirup/home/detailPaketPenyediaPublic2017/%d',
 		$db['sirup_penyedia']['select'],
-		function ($id, $status, $content) use ($db, $post_content, $fail) {
-			if ($status == SUCCESS)
-				$db['sirup_penyedia']['insert']($id, $content);
-			$post_content(sprintf('https://sirup.lkpp.go.id/sirup/home/detailPaketPenyediaPublic2017/%d', $id), DESCENDING, $fail['sirup_penyedia']($id, $status != FAIL), $status, $content);
-		},
+		function ($x, $y, $z) use ($res_call) { $res_call('[ L ] [---]', $x, $y, $z); },
 		DESCENDING, $lb, $ub, 2, 3, 3
+	));
+
+	$task->add(1, set_crawl(
+		'https://sirup.lkpp.go.id/sirup/home/detailPaketPenyediaPublic2017/%d',
+		$db['sirup_penyedia']['select'],
+		function ($x, $y, $z) use ($res_call) { $res_call('[ s ] [---]', $x, $y, $z); },
+		$holes, 3, 3
 	));
 
 	echo '<div style="font-family: Consolas;">';
@@ -220,6 +226,16 @@ function linear_crawl($urlf, $exists_callback, $result_callback, $ascending, $lb
 	return new queue_manager($urlf, $exists_callback, $result_callback, $job, $cooldown);
 }
 
+function set_crawl($urlf, $exists_callback, $result_callback, $set, $attempt, $cooldown) {
+	assert($attempt >= 1 && $cooldown >= 0);
+
+	$job = [new simple_queue($set)];
+	for ($i = 1; $i < $attempt; ++$i)
+		$job[] = new attempt_queue();
+
+	return new queue_manager($urlf, $exists_callback, $result_callback, $job, $cooldown);
+}
+
 define('FAIL'   , 0);
 define('SUCCESS', 1);
 define('EXISTS' , 2);
@@ -228,7 +244,7 @@ define('EXISTS' , 2);
  * exists_callback($id)
  * result_callback($id, $status, $content)
  *
- * Queue must have pop() and active().
+ * Queue must have pop() and is_empty().
  * Non-first queue must have push($id, $timestamp).
  */
 class queue_manager {
@@ -245,7 +261,7 @@ class queue_manager {
 		$id = null;
 
 		for ($i = count($this->job) - 1; $i >= 0; --$i) {
-			if ($this->job[$i]->active())
+			if (!$this->job[$i]->is_empty())
 				$active = true;
 			$id = $this->job[$i]->pop();
 			if ($id)
@@ -339,8 +355,8 @@ class generator_queue {
 		}
 	}
 
-	public function active() {
-		return (($this->ascending) ? $this->head <= $this->ub : $this->head >= $this->lb) && count($this->fail) < $this->margin;
+	public function is_empty() {
+		return (($this->ascending) ? $this->head > $this->ub : $this->head < $this->lb) || count($this->fail) >= $this->margin;
 	}
 }
 
@@ -366,11 +382,24 @@ class attempt_queue {
 	}
 
 	/*
-	 * Queue pop() may return null but stays active, where
-	 * it isn't empty but is waiting on the cool-down.
+	 * Queue pop() may return null but it isn't empty
+	 * while waiting on the cool-down.
 	 */
-	public function active() {
-		return count($this->queue) > 0;
+	public function is_empty() {
+		return count($this->queue) == 0;
+	}
+}
+
+class simple_queue {
+	public function __construct(public $queue) {}
+	public function push($item) {
+		$this->queue[] = $item;
+	}
+	public function pop() {
+		return array_shift($this->queue);
+	}
+	public function is_empty() {
+		return count($this->queue) == 0;
 	}
 }
 
