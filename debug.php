@@ -8,6 +8,7 @@ function main() {
 	// debug4();
 	// debug5();
 	// debug6();
+	// debug7();
 }
 
 /* Content download */
@@ -130,6 +131,14 @@ function debug6() {
 	$res = pg_execute($dbconn, $stmt, []);
 	echo '<h1>pg_fetch_all_columns($res, 1)</h1>';
 	echo '<p>'; var_dump(pg_fetch_all_columns($res, 1)); echo '</p>';
+}
+
+/* INI file */
+function debug7() {
+	$ini_array = parse_ini_file('crawl.ini', true, INI_SCANNER_TYPED);
+	echo '<div style="white-space: pre-wrap;">';
+	print_r($ini_array);
+	echo '</div>';
 }
 
 main();
