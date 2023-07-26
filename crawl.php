@@ -43,8 +43,6 @@ class insert_post {
 	}
 }
 
-define('MAX_EXECUTION_TIME', 3 * 24 * 60 * 60);
-
 define('ASCENDING' , true );
 define('DESCENDING', false);
 
@@ -57,9 +55,15 @@ function main() {
 	$dbname = $ini_array['dbname'];
 	$user = $ini_array['user'];
 	$password = $ini_array['password'];
+	$table = $ini_array['table'];
+
 	$dbconn = pg_connect(sprintf('dbname=%s user=%s password=%s', $dbname, $user, $password));
 
-	$db = [];
+	foreach (array_keys($ini_array) as $key)
+		if (!is_array($ini_array[$key]))
+			unset($ini_array[$key]);
+
+	$operation = [];
 	$task = new interleave();
 	$fail = [];
 
@@ -67,40 +71,36 @@ function main() {
 
 	foreach (array_keys($ini_array) as $urlf) {
 		$conf = $ini_array[$urlf];
+		$batch = $conf['batch'];
 
-		if (!is_array($conf))
-			continue;
+		$operation[$batch] = [];
 
-		$table = $conf['table'];
-
-		$db[$table] = [];
-
-		$db[$table]['select'] = new class($dbconn, $table) {
+		$operation[$batch]['select'] = new class($dbconn, $table, $batch) {
 			public $stmt;
-			public function __construct(public $dbconn, public $table) {
+			public function __construct(public $dbconn, public $table, public $batch) {
 				$this->stmt = bin2hex(random_bytes(16));
-				pg_prepare($dbconn, $this->stmt, sprintf('select id from %s where id = $1', $table));
+				pg_prepare($dbconn, $this->stmt, sprintf('select batch, id from %s where batch = $1 and id = $2', $table));
 			}
 			public function __invoke($id) {
-				$res = pg_execute($this->dbconn, $this->stmt, [$id]);
+				$res = pg_execute($this->dbconn, $this->stmt, [$this->batch, $id]);
 				return ($res === false) ? null : count(pg_fetch_all($res)) > 0;
 			}
 		};
 
-		$db[$table]['insert'] = new class($dbconn, $table) {
+		$operation[$batch]['insert'] = new class($dbconn, $table, $batch) {
 			public $stmt;
-			public function __construct(public $dbconn, public $table) {
+			public function __construct(public $dbconn, public $table, public $batch) {
 				$this->stmt = bin2hex(random_bytes(16));
-				pg_prepare($dbconn, $this->stmt, sprintf('insert into %s(id, content) values($1, $2)', $table));
+				pg_prepare($dbconn, $this->stmt, sprintf('insert into %s(batch, id, content) values($1, $2, $3)', $table));
 			}
 			public function __invoke($id, $content) {
-				return pg_execute($this->dbconn, $this->stmt, [$id, $content]);
+				return pg_execute($this->dbconn, $this->stmt, [$this->batch, $id, $content]);
 			}
 		};
 
-		$fail[$table] = new trial_count($conf['attempt']);
+		$fail[$batch] = new trial_count($conf['attempt']);
 
-		list($holes, $lb, $ub) = linear_bound($conf['start'], $conf['ub'], $conf['margin'], ASCENDING, $db[$table]['select']);
+		list($holes, $lb, $ub) = linear_bound($conf['start'], $conf['ub'], $conf['margin'], ASCENDING, $operation[$batch]['select']);
 		printf(
 			'<details>
 				<summary>%s<p>start: %d, lb: %d, ub: %d</p></summary>
@@ -115,8 +115,8 @@ function main() {
 		ob_flush(); flush();
 
 		$task->add($conf['weight.asc'], linear_crawl(
-			$urlf, $db[$table]['select'],
-			new insert_post('[ G ] [+++]', $db[$table]['insert'], $fail[$table], $urlf),
+			$urlf, $operation[$batch]['select'],
+			new insert_post('[ G ] [+++]', $operation[$batch]['insert'], $fail[$batch], $urlf),
 			ASCENDING,
 			$lb,
 			$ub,
@@ -126,14 +126,14 @@ function main() {
 		));
 
 		$task->add($conf['weight.ret'], set_crawl($urlf,
-			$db[$table]['select'],
-			new insert_post('[ s ] [+++]', $db[$table]['insert'], $fail[$table], $urlf),
+			$operation[$batch]['select'],
+			new insert_post('[ s ] [+++]', $operation[$batch]['insert'], $fail[$batch], $urlf),
 			$holes,
 			$conf['attempt'],
 			$conf['cooldown']
 		));
 
-		list($holes, $lb, $ub) = linear_bound($conf['lb'], $conf['start'] - 1, $conf['margin'], DESCENDING, $db[$table]['select']);
+		list($holes, $lb, $ub) = linear_bound($conf['lb'], $conf['start'] - 1, $conf['margin'], DESCENDING, $operation[$batch]['select']);
 		printf(
 			'<details>
 				<summary>%s<p>start: %d, lb: %d, ub: %d</p></summary>
@@ -148,8 +148,8 @@ function main() {
 		ob_flush(); flush();
 
 		$task->add($conf['weight.dsc'], linear_crawl($urlf,
-			$db[$table]['select'],
-			new insert_post('[ G ] [---]', $db[$table]['insert'], $fail[$table], $urlf),
+			$operation[$batch]['select'],
+			new insert_post('[ G ] [---]', $operation[$batch]['insert'], $fail[$batch], $urlf),
 			DESCENDING,
 			$lb,
 			$ub,
@@ -159,8 +159,8 @@ function main() {
 		));
 
 		$task->add($conf['weight.ret'], set_crawl($urlf,
-			$db[$table]['select'],
-			new insert_post('[ s ] [---]', $db[$table]['insert'], $fail[$table], $urlf),
+			$operation[$batch]['select'],
+			new insert_post('[ s ] [---]', $operation[$batch]['insert'], $fail[$batch], $urlf),
 			$holes,
 			$conf['attempt'],
 			$conf['cooldown']
@@ -219,7 +219,7 @@ class interleave {
 }
 
 function linear_bound($lb, $ub, $margin, $ascending, $exists_callback) {
-	assert($margin >= 0);
+	assert($margin >= 1);
 	$holes = [];
 	$fail = [];
 	if ($ascending) {
