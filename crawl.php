@@ -9,7 +9,7 @@ function post_content ($url, $type, $trial, $status, $content) {
 		break;
 	case SUCCESS:
 		$status = 'SUCCESS';
-		printf('<div style="%s"><p>%s</p></div>', 'white-space: pre-wrap;', htmlspecialchars($content));
+		printf('<div><p>%s</p></div>', htmlspecialchars($content));
 		break;
 	case EXISTS:
 		$status = 'EXISTS';
@@ -34,19 +34,36 @@ class trial_count {
 	}
 }
 
-class insert_post {
-	public function __construct(public $type, public $insert, public $fail, public $urlf) {}
-	public function __invoke($id, $status, $content) {
-		if ($status == SUCCESS)
-			($this->insert)($id, $content);
-		post_content(sprintf($this->urlf, $id), $this->type, ($this->fail)($id, $status != FAIL), $status, $content);
-	}
+function dump_insert($insert, $urlf, $fail) {
+	return function ($type) use ($insert, $urlf, $fail) {
+		return function ($id, $status, $content) use ($insert, $urlf, $fail, $type) {
+			$insert($id, $status, $content);
+			post_content(sprintf($urlf, $id), $type, ($fail)($id, $status != FAIL), $status, $content);
+		};
+	};
+}
+
+function dump_linear_bound($urlf, $conf, $holes, $lb, $ub) {
+	printf(
+		'<details>
+			<summary>%s<p>start: %d, lb: %d, ub: %d</p></summary>
+			<div style="white-space: pre-wrap;"><p>',
+		$urlf, $conf['start'], $lb, $ub
+	);
+	var_dump($holes);
+	printf(
+			'</p></div>
+		</details>'
+	);
+	ob_flush(); flush();
 }
 
 define('ASCENDING' , true );
 define('DESCENDING', false);
 
 function main() {
+	echo '<div style="white-space: pre-wrap; font-family: Consolas;">';
+
 	$ini_array = parse_ini_file("crawl.ini", true, INI_SCANNER_TYPED);
 
 	$max_execution_time = $ini_array['max_execution_time'];
@@ -57,114 +74,47 @@ function main() {
 	$password = $ini_array['password'];
 	$table = $ini_array['table'];
 
-	$dbconn = pg_connect(sprintf('dbname=%s user=%s password=%s', $dbname, $user, $password));
-
 	foreach (array_keys($ini_array) as $key)
 		if (!is_array($ini_array[$key]))
 			unset($ini_array[$key]);
 
-	$operation = [];
+	$dbconn = pg_connect(sprintf('dbname=%s user=%s password=%s', $dbname, $user, $password));
+	$db = [];
+	$db[$table]['exists'] = new db_exists($dbconn, $table, ['website', 'type', 'id']);
+	$db[$table]['insert'] = new db_insert($dbconn, $table, ['website', 'type', 'id', 'content']);
+
 	$task = new interleave();
 	$fail = [];
 
-	echo '<div style="font-family: Consolas;">';
-
 	foreach (array_keys($ini_array) as $urlf) {
 		$conf = $ini_array[$urlf];
-		$batch = $conf['batch'];
+		$ma = $conf['margin'];
+		$at = $conf['attempt'];
+		$co = $conf['cooldown'];
+		$ra = $conf['weight_asc'];
+		$rd = $conf['weight_dsc'];
+		$rr = $conf['weight_ret'];
 
-		$operation[$batch] = [];
-
-		$operation[$batch]['select'] = new class($dbconn, $table, $batch) {
-			public $stmt;
-			public function __construct(public $dbconn, public $table, public $batch) {
-				$this->stmt = bin2hex(random_bytes(16));
-				pg_prepare($dbconn, $this->stmt, sprintf('select batch, id from %s where batch = $1 and id = $2', $table));
-			}
-			public function __invoke($id) {
-				$res = pg_execute($this->dbconn, $this->stmt, [$this->batch, $id]);
-				return ($res === false) ? null : count(pg_fetch_all($res)) > 0;
-			}
+		$exists = function ($id) use ($db, $table, $conf) {
+			$db[$table]['exists']($conf['website'], $conf['type'], $id);
 		};
 
-		$operation[$batch]['insert'] = new class($dbconn, $table, $batch) {
-			public $stmt;
-			public function __construct(public $dbconn, public $table, public $batch) {
-				$this->stmt = bin2hex(random_bytes(16));
-				pg_prepare($dbconn, $this->stmt, sprintf('insert into %s(batch, id, content) values($1, $2, $3)', $table));
-			}
-			public function __invoke($id, $content) {
-				return pg_execute($this->dbconn, $this->stmt, [$this->batch, $id, $content]);
-			}
+		$insert = function ($id, $status, $content) use ($db, $table, $conf) {
+			if ($status == SUCCESS)
+				$db[$table]['insert']($conf['website'], $conf['type'], $id, $content);
 		};
 
-		$fail[$batch] = new trial_count($conf['attempt']);
+		$dmp_i = dump_insert($insert, $urlf, new trial_count($at));
 
-		list($holes, $lb, $ub) = linear_bound($conf['start'], $conf['ub'], $conf['margin'], ASCENDING, $operation[$batch]['select']);
-		printf(
-			'<details>
-				<summary>%s<p>start: %d, lb: %d, ub: %d</p></summary>
-				<div style="white-space: pre-wrap;"><p>',
-			$urlf, $conf['start'], $lb, $ub
-		);
-		var_dump($holes);
-		printf(
-				'</p></div>
-			</details>'
-		);
-		ob_flush(); flush();
+		list($ho, $lb, $ub) = linear_bound($conf['start'], $conf['ub'], $ma, ASCENDING, $exists);
+		dump_linear_bound($urlf, $conf, $ho, $lb, $ub);
+		$task->add($ra, linear_crawl($urlf, $exists, $dmp_i('[G] [+++]'), ASCENDING, $lb, $ub, $ma, $at, $co));
+		$task->add($rr, set_crawl($urlf, $exists, $dmp_i('[s] [+++]'), $ho, $at, $co));
 
-		$task->add($conf['weight.asc'], linear_crawl(
-			$urlf, $operation[$batch]['select'],
-			new insert_post('[ G ] [+++]', $operation[$batch]['insert'], $fail[$batch], $urlf),
-			ASCENDING,
-			$lb,
-			$ub,
-			$conf['margin'],
-			$conf['attempt'],
-			$conf['cooldown']
-		));
-
-		$task->add($conf['weight.ret'], set_crawl($urlf,
-			$operation[$batch]['select'],
-			new insert_post('[ s ] [+++]', $operation[$batch]['insert'], $fail[$batch], $urlf),
-			$holes,
-			$conf['attempt'],
-			$conf['cooldown']
-		));
-
-		list($holes, $lb, $ub) = linear_bound($conf['lb'], $conf['start'] - 1, $conf['margin'], DESCENDING, $operation[$batch]['select']);
-		printf(
-			'<details>
-				<summary>%s<p>start: %d, lb: %d, ub: %d</p></summary>
-				<div style="white-space: pre-wrap;"><p>',
-			$urlf, $conf['start'] - 1, $lb, $ub
-		);
-		var_dump($holes);
-		printf(
-				'</p></div>
-			</details>'
-		);
-		ob_flush(); flush();
-
-		$task->add($conf['weight.dsc'], linear_crawl($urlf,
-			$operation[$batch]['select'],
-			new insert_post('[ G ] [---]', $operation[$batch]['insert'], $fail[$batch], $urlf),
-			DESCENDING,
-			$lb,
-			$ub,
-			$conf['margin'],
-			$conf['attempt'],
-			$conf['cooldown']
-		));
-
-		$task->add($conf['weight.ret'], set_crawl($urlf,
-			$operation[$batch]['select'],
-			new insert_post('[ s ] [---]', $operation[$batch]['insert'], $fail[$batch], $urlf),
-			$holes,
-			$conf['attempt'],
-			$conf['cooldown']
-		));
+		list($ho, $lb, $ub) = linear_bound($conf['lb'], $conf['start'] - 1, $ma, DESCENDING, $exists);
+		dump_linear_bound($urlf, $conf, $ho, $lb, $ub);
+		$task->add($rd, linear_crawl($urlf, $exists, $dmp_i('[G] [---]'), DESCENDING, $lb, $ub, $ma, $at, $co));
+		$task->add($rr, set_crawl($urlf, $exists, $dmp_i('[s] [---]'), $ho, $at, $co));
 	}
 
 	while ($task->work())
@@ -172,6 +122,48 @@ function main() {
 	echo '<p>Done.</p>';
 
 	echo '</div>';
+}
+
+class db_exists {
+	public $stmt;
+
+	public function __construct(public $dbconn, $table, $params) {
+		assert(count($params) > 0);
+		$this->stmt = bin2hex(random_bytes(16));
+		$query = 'select ';
+		for ($i = 0; $i < count($params); ++$i)
+			$query = sprintf('%s%s%s', $query, $params[$i], ($i < count($params) - 1) ? ', ' : '');
+		$query = sprintf('%s from %s where ', $query, $table);
+		for ($i = 0; $i < count($params); ++$i)
+			$query = sprintf('%s%s = $%d%s', $query, $params[$i], $i + 1, ($i < count($params) - 1) ? ' and ' : '');
+		pg_prepare($dbconn, $this->stmt, $query);
+	}
+
+	public function __invoke(...$args) {
+		$res = pg_execute($this->dbconn, $this->stmt, $args);
+		return ($res === false) ? null : count(pg_fetch_all($res)) > 0;
+	}
+}
+
+class db_insert {
+	public $stmt;
+
+	public function __construct(public $dbconn, $table, $params) {
+		assert(count($params) > 0);
+		$this->stmt = bin2hex(random_bytes(16));
+		$query = sprintf('insert into %s(', $table);
+		for ($i = 0; $i < count($params); ++$i)
+			$query = sprintf('%s%s%s', $query, $params[$i], ($i < count($params) - 1) ? ', ' : '');
+		$query = sprintf('%s) values(', $query);
+		for ($i = 0; $i < count($params); ++$i)
+			$query = sprintf('%s$%d%s', $query, $i + 1, ($i < count($params) - 1) ? ', ' : '');
+		$query = sprintf('%s)', $query);
+		pg_prepare($dbconn, $this->stmt, $query);
+	}
+
+	public function __invoke(...$args) {
+		return pg_execute($this->dbconn, $this->stmt, $args);
+	}
 }
 
 class interleave {
@@ -184,8 +176,9 @@ class interleave {
 	public $jmp = 0;
 
 	public function add($rate, $task) {
-		assert($rate > 0);
-
+		assert($rate >= 0);
+		if ($rate == 0)
+			return;
 		$this->rate[] = $rate;
 		$this->task[] = $task;
 		$this->active[] = true;
