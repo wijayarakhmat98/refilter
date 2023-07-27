@@ -96,7 +96,7 @@ function main() {
 		$rr = $conf['weight_ret'];
 
 		$exists = function ($id) use ($db, $table, $conf) {
-			$db[$table]['exists']($conf['website'], $conf['type'], $id);
+			return $db[$table]['exists']($conf['website'], $conf['type'], $id);
 		};
 
 		$insert = function ($id, $status, $content) use ($db, $table, $conf) {
