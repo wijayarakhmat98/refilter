@@ -80,7 +80,7 @@ function main() {
 
 	$dbconn = pg_connect(sprintf('dbname=%s user=%s password=%s', $dbname, $user, $password));
 	$db = [];
-	$db[$table]['exists'] = new db_exists($dbconn, $table, ['website', 'type', 'id']);
+	$db[$table]['exists'] = new db_exists($dbconn, $table, ['website', 'type', 'id'], ['type']);
 	$db[$table]['insert'] = new db_insert($dbconn, $table, ['website', 'type', 'id', 'content']);
 
 	$task = new interleave();
@@ -127,15 +127,21 @@ function main() {
 class db_exists {
 	public $stmt;
 
-	public function __construct(public $dbconn, $table, $params) {
+	public function __construct(public $dbconn, $table, $params, $nullable = []) {
 		assert(count($params) > 0);
 		$this->stmt = bin2hex(random_bytes(16));
 		$query = 'select ';
 		for ($i = 0; $i < count($params); ++$i)
 			$query = sprintf('%s%s%s', $query, $params[$i], ($i < count($params) - 1) ? ', ' : '');
 		$query = sprintf('%s from %s where ', $query, $table);
-		for ($i = 0; $i < count($params); ++$i)
-			$query = sprintf('%s%s = $%d%s', $query, $params[$i], $i + 1, ($i < count($params) - 1) ? ' and ' : '');
+		for ($i = 0; $i < count($params); ++$i) {
+			if (in_array($params[$i], $nullable))
+				$query = sprintf('%s(%s = $%d or (%s is NULL and $%d is NULL))', $query, $params[$i], $i + 1, $params[$i], $i + 1);
+			else
+				$query = sprintf('%s%s = $%d', $query, $params[$i], $i + 1);
+			if ($i < count($params) - 1)
+				$query = sprintf('%s and ', $query);
+		}
 		pg_prepare($dbconn, $this->stmt, $query);
 	}
 
