@@ -167,45 +167,44 @@ class db_insert {
 }
 
 class interleave {
-	/* rate, task, and active are parallels */
-	public $rate = [];
+	public $group = [];
 	public $task = [];
-	public $active = [];
-
-	public $pc = -1;
-	public $jmp = 0;
+	public $pc = 0;
 
 	public function add($rate, $task) {
-		assert($rate >= 0);
-		if ($rate == 0)
-			return;
-		$this->rate[] = $rate;
-		$this->task[] = $task;
-		$this->active[] = true;
+		$group = bin2hex(random_bytes(16));
+		for ($i = 0; $i < $rate; ++$i) {
+			$this->group[] = $group;
+			$this->task[] = $task;
+		}
 	}
 
-	/* This is invalid until add() is called at least once. */
 	public function work() {
-		assert(count($this->task) > 0);
+		if (count($this->task) == 0)
+			return false;
 
-		if ($this->jmp <= 0) {
-			for ($i = $this->pc + 1; ; ++$i) {
-				if ($i >= count($this->task))
-					$i = 0;
-				if ($this->active[$i])
-					break;
-				if ($i == $this->pc)
-					return false;
-			}
-			$this->pc = $i;
-			$this->jmp = $this->rate[$this->pc];
+		if ($this->task[$this->pc]->work())
+			++$this->pc;
+		else {
+			$group = [];
+			$task = [];
+			$pc = -1;
+			for ($i = 0; $i < count($this->task); ++$i)
+				if ($this->group[$i] == $this->group[$this->pc]) {
+					if ($pc < 0)
+						$pc = $i;
+				}
+				else {
+					$group[] = $this->group[$i];
+					$task[] = $this->task[$i];
+				}
+			$this->group = $group;
+			$this->task = $task;
+			$this->pc = $pc;
 		}
 
-		$this->active[$this->pc] = $this->task[$this->pc]->work();
-		--$this->jmp;
-
-		if (!$this->active[$this->pc])
-			$this->jmp = 0;
+		if ($this->pc >= count($this->task))
+			$this->pc = 0;
 
 		return true;
 	}
