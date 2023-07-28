@@ -180,42 +180,45 @@ $stat_order = ['lower bound', 'upper bound', 'uniques', 'holes', 'duplicate uniq
 			for ($i = 0; $i < count($stat_order); ++$i)
 				printf('%s: %d%s', $stat_order[$i], $stat[$stat_order[$i]], ($i < count($stat_order) - 1) ? '&emsp;' : '');
 		?></p>
-<?php else: ?>
-		<p>Not found</p>
 <?php endif; ?>
 		</div>
 	</div>
 	<div style="flex: 1; overflow: auto;">
+<?php if ($stat == null): ?>
+		<div style="width: 100%; height: 100%; display: table; text-align: center;">
+			<span style="display: table-cell; vertical-align: middle;">
+				Not found.
+			</span>
+		</div>
+<?php else: ?>
+<?php if ($content == null): ?>
+		<div style="width: 100%; height: 100%; display: table; text-align: center;">
+			<span style="display: table-cell; vertical-align: middle;">
+				<?php printf('<a href="%s">%s</a>', $data['url'], $data['url']); ?>
+			</span>
+		</div>
+<?php else: ?>
 		<div style="height: 100%; display: flex;">
 			<div style="flex: 1; overflow: auto;">
-<?php if ($stat != null): ?>
-<?php if ($content == null): ?>
-				<div style="width: 100%; height: 100%; display: table; text-align: center;">
-					<span style="display: table-cell; vertical-align: middle;">
-						<?php printf('<a href="%s">%s</a>', $data['url'], $data['url']); ?>
-					</span>
+				<div style="width: 100%; height: 100%; padding: 0 1rem 1rem 1rem; box-sizing: border-box;">
+					<div style="height: 100%; display: flex; flex-direction: column;">
+						<div style="flex: 0;">
+							<p style="margin: 0 0 1rem 0;"><?php printf('<a href="%s">%s</a>', $data['url'], $data['url']); ?></p>
+						</div>
+						<div style="flex: 1;">
+							<iframe style="width: 100%; height: 100%;" srcdoc="<?php echo htmlspecialchars($clean) ?>"></iframe>
+						</div>
+					</div>
 				</div>
-<?php else: ?>
-				<div style="width: 100%; height: 100%; padding: 1rem; box-sizing: border-box;">
-					<iframe style="width: 100%; height: 100%;" srcdoc="<?php echo htmlspecialchars($clean) ?>"></iframe>
-				</div>
-<?php endif; ?>
-<?php endif; ?>
 			</div>
 			<div style="flex: 1; overflow: auto;">
-<?php if ($stat != null): ?>
-<?php if ($content == null): ?>
-				<div style="width: 100%; height: 100%; display: table; text-align: center;">
-					<span style="display: table-cell; vertical-align: middle;">Not found.</span>
-				</div>
-<?php else: ?>
 				<div style="width: 100%; height: 100%; overflow: auto;">
 					<div style="white-space: pre; font-family: Consolas;"><?php echo htmlspecialchars($content); ?></div>
 				</div>
-<?php endif; ?>
-<?php endif; ?>
 			</div>
 		</div>
+<?php endif; ?>
+<?php endif; ?>
 	</div>
 </div>
 
