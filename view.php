@@ -116,17 +116,28 @@ else {
 		$res[0];
 }
 
-if ($res == null) {
-	$lb = null;
-	$ub = null;
-	$entries = 0;
-	$holes = 0;
-} else {
-	$lb = $res[0]['id'];
-	$ub = $res[array_key_last($res)]['id'];
-	$entries = count($res);
-	$holes = $ub - $lb + 1 - $entries;
+if ($res == null)
+	$stat = null;
+else {
+	$stat = [];
+
+	$stat['entries'] = [];
+	for ($i = 0; $i < count($res); ++$i)
+		$stat['entries'][] = $res[$i]['id'];
+	$stat['uniques'] = array_unique($stat['entries']);
+	$stat['duplicate entries'] = array_diff_assoc($stat['entries'], $stat['uniques']);
+	$stat['duplicate uniques'] = array_unique($stat['duplicate entries']);
+
+	$stat['lower bound'] = $res[0]['id'];
+	$stat['upper bound'] = $res[array_key_last($res)]['id'];
+	$stat['uniques'] = count($stat['uniques']);
+	$stat['holes'] = $stat['upper bound'] - $stat['lower bound'] + 1 - $stat['uniques'];
+	$stat['duplicate uniques'] = count($stat['duplicate uniques']);
+	$stat['entries'] = count($stat['entries']);
+	$stat['duplicate entries'] = count($stat['duplicate entries']);
 }
+
+$stat_order = ['lower bound', 'upper bound', 'uniques', 'holes', 'duplicate uniques', 'entries', 'duplicate entries'];
 
 ?>
 
@@ -164,16 +175,11 @@ if ($res == null) {
 	</div>
 	<div style="flex: 0;">
 		<div style="text-align: center;">
-<?php if ($lb != null && $ub != null): ?>
-		<p>
-				lb: <?php echo $lb; ?>
-				&emsp;
-				ub: <?php echo $ub; ?>
-				&emsp;
-				entries: <?php echo $entries; ?>
-				&emsp;
-				holes: <?php echo $holes; ?>
-		</p>
+<?php if ($stat != null): ?>
+		<p><?php
+			for ($i = 0; $i < count($stat_order); ++$i)
+				printf('%s: %d%s', $stat_order[$i], $stat[$stat_order[$i]], ($i < count($stat_order) - 1) ? '&emsp;' : '');
+		?></p>
 <?php else: ?>
 		<p>Not found</p>
 <?php endif; ?>
@@ -182,7 +188,7 @@ if ($res == null) {
 	<div style="flex: 1; overflow: auto;">
 		<div style="height: 100%; display: flex;">
 			<div style="flex: 1; overflow: auto;">
-<?php if ($lb != null && $ub != null): ?>
+<?php if ($stat != null): ?>
 <?php if ($content == null): ?>
 				<div style="width: 100%; height: 100%; display: table; text-align: center;">
 					<span style="display: table-cell; vertical-align: middle;">
@@ -197,7 +203,7 @@ if ($res == null) {
 <?php endif; ?>
 			</div>
 			<div style="flex: 1; overflow: auto;">
-<?php if ($lb != null && $ub != null): ?>
+<?php if ($stat != null): ?>
 <?php if ($content == null): ?>
 				<div style="width: 100%; height: 100%; display: table; text-align: center;">
 					<span style="display: table-cell; vertical-align: middle;">Not found.</span>
