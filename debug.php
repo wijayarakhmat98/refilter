@@ -9,6 +9,7 @@ function main() {
 	// debug5();
 	// debug6();
 	// debug7();
+	// debug8();
 }
 
 /* Content download */
@@ -139,6 +140,18 @@ function debug7() {
 	echo '<div style="white-space: pre-wrap;">';
 	print_r($ini_array);
 	echo '</div>';
+}
+
+/* Decode Cloudflare obfuscated email */
+function debug8() {
+	function cfDecodeEmail($encodedString){
+		$k = hexdec(substr($encodedString,0,2));
+		for($i=2,$email='';$i<strlen($encodedString)-1;$i+=2){
+			$email.=chr(hexdec(substr($encodedString,$i,2))^$k);
+		}
+		return $email;
+	}
+	echo cfDecodeEmail('fb9e9682bb8b9e959c938e998e959cd5919a8f9e959c8b89948dd59c94d5929f');
 }
 
 main();
