@@ -10,6 +10,7 @@ function main() {
 	// debug6();
 	// debug7();
 	// debug8();
+	// debug9();
 }
 
 /* Content download */
@@ -152,6 +153,65 @@ function debug8() {
 		return $email;
 	}
 	echo cfDecodeEmail('fb9e9682bb8b9e959c938e998e959cd5919a8f9e959c8b89948dd59c94d5929f');
+}
+
+/* Traverse DOM */
+function debug9() {
+	function traverse($node, $last = []) {
+		static $whitelist = [XML_HTML_DOCUMENT_NODE, XML_ELEMENT_NODE, XML_TEXT_NODE];
+
+		if (!in_array($node->nodeType, $whitelist))
+			return;
+
+		for ($i = 0; $i < count($last); ++$i)
+			if ($i < count($last) - 1)
+				echo (!$last[$i]) ? '|   ' : '    ';
+			else
+				echo (!$last[$i]) ? '+-- ' : 'L-- ';
+
+		switch ($node->nodeType) {
+			case XML_HTML_DOCUMENT_NODE:
+			case XML_ELEMENT_NODE:
+				echo htmlspecialchars(sprintf("%s\n", $node->nodeName));
+				break;
+
+			case XML_TEXT_NODE:
+				echo htmlspecialchars(sprintf("%s\n", trim($node->nodeValue)));
+				break;
+
+			default:
+				echo "\n";
+				break;
+		}
+
+		$children = [];
+		foreach ($node->childNodes as $child)
+			if (in_array($child->nodeType, $whitelist))
+				if ($child->nodeType == XML_TEXT_NODE) {
+					$text = trim($child->nodeValue);
+					if (strlen($text) > 0)
+						$children[] = $child;
+				}
+				else
+					$children[] = $child;
+
+		foreach ($children as $i => $child)
+			traverse($child, [...$last, !($i < count($children) - 1)]);
+	}
+
+	echo '<div style="white-space: pre; font-family: Consolas;">';
+	pg_prepare(
+		$dbconn = pg_connect('dbname=refilter user=postgres password=1234'),
+		$stmt = bin2hex(random_bytes(16)),
+		'select content from raw where website = $1 and type = $2 and id = $3'
+	);
+	($doc = new DOMDocument('1.0', 'utf-8'))
+		->loadHTML(pg_fetch_all(
+			pg_execute($dbconn, $stmt, ['sirup', 'penyedia', 38401264]))[0]['content']
+		);
+	// showDOMNode($doc);
+	traverse($doc);
+	echo '</div>';
 }
 
 main();
