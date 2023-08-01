@@ -11,6 +11,7 @@ function main() {
 	// debug7();
 	// debug8();
 	// debug9();
+	// debug10();
 }
 
 /* Content download */
@@ -209,8 +210,64 @@ function debug9() {
 		->loadHTML(pg_fetch_all(
 			pg_execute($dbconn, $stmt, ['sirup', 'penyedia', 38401264]))[0]['content']
 		);
-	// showDOMNode($doc);
 	traverse($doc);
+	echo '</div>';
+}
+
+
+/* XPath */
+function debug10() {
+	function traverse($node, $last = []) {
+		static $whitelist = [XML_HTML_DOCUMENT_NODE, XML_ELEMENT_NODE, XML_TEXT_NODE, XML_ATTRIBUTE_NODE];
+		if (!in_array($node->nodeType, $whitelist))
+			return;
+		for ($i = 0; $i < count($last); ++$i)
+			if ($i < count($last) - 1)
+				echo (!$last[$i]) ? '|   ' : '    ';
+			else
+				if ($node->nodeType == XML_ATTRIBUTE_NODE)
+					echo (!$last[$i]) ? '|:: ' : 'L:: ';
+				else
+					echo (!$last[$i]) ? '+-- ' : 'L-- ';
+		if ($node->nodeType == XML_TEXT_NODE)
+			echo htmlspecialchars(sprintf("%s\n", trim($node->nodeValue)));
+		elseif ($node->nodeType == XML_ATTRIBUTE_NODE)
+			echo htmlspecialchars(sprintf("%s: %s\n", $node->nodeName, $node->nodeValue));
+		else
+			echo htmlspecialchars(sprintf("%s\n", $node->nodeName));
+		if ($node->nodeType != XML_ATTRIBUTE_NODE) {
+			$children = [];
+			if ($node->attributes)
+				foreach ($node->attributes as $attribute)
+					$children[] = $attribute;
+			foreach ($node->childNodes as $child)
+				if (in_array($child->nodeType, $whitelist))
+					if ($child->nodeType != XML_TEXT_NODE || strlen(trim($child->nodeValue)) > 0)
+						$children[] = $child;
+			foreach ($children as $i => $child)
+				traverse($child, [...$last, !($i < count($children) - 1)]);
+		}
+	}
+
+	function has_class($name) {
+		return sprintf('contains(concat(" ", normalize-space(@class), " "), " %s ")', $name);
+	}
+
+	echo '<div style="white-space: pre; font-family: Consolas;">';
+	pg_prepare(
+		$dbconn = pg_connect('dbname=refilter user=postgres password=1234'),
+		$stmt = bin2hex(random_bytes(16)),
+		'select content from raw where website = $1 and type = $2 and id = $3'
+	);
+	($doc = new DOMDocument('1.0', 'utf-8'))
+		->loadHTML(pg_fetch_all(
+			pg_execute($dbconn, $stmt, ['sirup', 'penyedia', 38401264]))[0]['content']
+		);
+	// traverse($doc);
+	$xpath = new Domxpath($doc);
+	$elements = $xpath->query(sprintf('/html/body/div/div[%s]/table[%s]', '@id="detil"', has_class('table')));
+	foreach ($elements as $element)
+		traverse($element);
 	echo '</div>';
 }
 
