@@ -1,5 +1,37 @@
 <?php
 
+function traverse($node, $last = []) {
+	static $whitelist = [XML_HTML_DOCUMENT_NODE, XML_ELEMENT_NODE, XML_TEXT_NODE, XML_ATTRIBUTE_NODE];
+	if (!in_array($node->nodeType, $whitelist))
+		return;
+	for ($i = 0; $i < count($last); ++$i)
+		if ($i < count($last) - 1)
+			echo (!$last[$i]) ? '|   ' : '    ';
+		else
+			if ($node->nodeType == XML_ATTRIBUTE_NODE)
+				echo (!$last[$i]) ? '|:: ' : 'L:: ';
+			else
+				echo (!$last[$i]) ? '+-- ' : 'L-- ';
+	if ($node->nodeType == XML_TEXT_NODE)
+		echo htmlspecialchars(sprintf("%s\n", trim($node->nodeValue)));
+	elseif ($node->nodeType == XML_ATTRIBUTE_NODE)
+		echo htmlspecialchars(sprintf("%s: %s\n", $node->nodeName, $node->nodeValue));
+	else
+		echo htmlspecialchars(sprintf("%s\n", $node->nodeName));
+	if ($node->nodeType != XML_ATTRIBUTE_NODE) {
+		$children = [];
+		if ($node->attributes)
+			foreach ($node->attributes as $attribute)
+				$children[] = $attribute;
+		foreach ($node->childNodes as $child)
+			if (in_array($child->nodeType, $whitelist))
+				if ($child->nodeType != XML_TEXT_NODE || strlen(trim($child->nodeValue)) > 0)
+					$children[] = $child;
+		foreach ($children as $i => $child)
+			traverse($child, [...$last, !($i < count($children) - 1)]);
+	}
+}
+
 $data = $_GET;
 
 if (!isset($data['website']) || strlen($data['website']) == 0) {
@@ -81,6 +113,7 @@ else {
 
 $content = $res;
 $clean = $res;
+@($doc = new DOMDocument('1.0', 'utf-8'))->loadHTML($content);
 
 if ($res != null)
 	switch([$data['website'], $data['type']]) {
@@ -212,8 +245,27 @@ $stat_order = ['lower bound', 'upper bound', 'uniques', 'holes', 'duplicate uniq
 				</div>
 			</div>
 			<div style="flex: 1; overflow: auto;">
-				<div style="width: 100%; height: 100%; overflow: auto;">
-					<div style="white-space: pre; font-family: Consolas;"><?php echo htmlspecialchars($content); ?></div>
+				<div style="width: 100%; height: 100%;">
+					<div style="height: 100%; display: flex; flex-direction: column;">
+						<div style="flex: 0;">
+							<div style="margin: 0 0 1rem 0;">
+								<button onclick="javascript:activate_tab('tab_1');">Source</button>
+								<button onclick="javascript:activate_tab('tab_2');">Tree</button>
+							</div>
+						</div>
+						<div style="flex: 1; overflow: auto;">
+							<div style="width: 100%; height: 100%; overflow: auto;">
+								<div id="tab_control">
+									<div id="tab_1" style="display: block">
+										<div style="white-space: pre; font-family: Consolas;"><?php echo htmlspecialchars($content); ?></div>
+									</div>
+									<div id="tab_2" style="display: none">
+										<div style="white-space: pre; font-family: Consolas;"><?php traverse($doc); ?></div>
+									</div>
+								</div>
+							</div>
+						</div>
+					</div>
 				</div>
 			</div>
 		</div>
@@ -221,6 +273,22 @@ $stat_order = ['lower bound', 'upper bound', 'uniques', 'holes', 'duplicate uniq
 <?php endif; ?>
 	</div>
 </div>
+
+<script type="text/javascript">
+	function activate_tab(tab_id) {
+		localStorage.setItem('activate_tab', tab_id);
+		var tab_control = document.getElementById('tab_control');
+		var activate_tab = document.getElementById(tab_id);
+		for (var i = 0; i < tab_control.childNodes.length; ++i) {
+			var node = tab_control.childNodes[i];
+			if (node.nodeType == Node.ELEMENT_NODE)
+				node.style.display = (node == activate_tab) ? 'block' : 'none';
+		}
+	}
+
+	if ((tab_id = localStorage.getItem('activate_tab')) !== null)
+		activate_tab(tab_id);
+</script>
 
 <style>
 	body {
