@@ -113,7 +113,9 @@ else {
 
 $content = $res;
 $clean = $res;
-@($doc = new DOMDocument('1.0', 'utf-8'))->loadHTML($content);
+$doc = new DOMDocument('1.0', 'utf-8');
+if ($content)
+	@$doc->loadHTML($content);
 
 if ($res != null)
 	switch([$data['website'], $data['type']]) {
@@ -254,7 +256,7 @@ $stat_order = ['lower bound', 'upper bound', 'uniques', 'holes', 'duplicate uniq
 							</div>
 						</div>
 						<div style="flex: 1; overflow: auto;">
-							<div style="width: 100%; height: 100%; overflow: auto;">
+							<div id="scroll" style="width: 100%; height: 100%; overflow: auto;">
 								<div id="tab_control">
 									<div id="tab_1" style="display: block">
 										<div style="white-space: pre; font-family: Consolas;"><?php echo htmlspecialchars($content); ?></div>
@@ -276,18 +278,41 @@ $stat_order = ['lower bound', 'upper bound', 'uniques', 'holes', 'duplicate uniq
 
 <script type="text/javascript">
 	function activate_tab(tab_id) {
-		localStorage.setItem('activate_tab', tab_id);
 		var tab_control = document.getElementById('tab_control');
-		var activate_tab = document.getElementById(tab_id);
-		for (var i = 0; i < tab_control.childNodes.length; ++i) {
-			var node = tab_control.childNodes[i];
-			if (node.nodeType == Node.ELEMENT_NODE)
-				node.style.display = (node == activate_tab) ? 'block' : 'none';
+		if (tab_control !== null) {
+			localStorage.setItem('activate_tab', tab_id);
+			var activate_tab = document.getElementById(tab_id);
+			for (var i = 0; i < tab_control.childNodes.length; ++i) {
+				var node = tab_control.childNodes[i];
+				if (node.nodeType == Node.ELEMENT_NODE)
+					node.style.display = (node == activate_tab) ? 'block' : 'none';
+			}
 		}
 	}
 
-	if ((tab_id = localStorage.getItem('activate_tab')) !== null)
+	window.onbeforeunload = function(e) {
+		var div = document.getElementById('scroll');
+		if (div !== null) {
+			localStorage.setItem('scroll_x_pos', div.scrollLeft);
+			localStorage.setItem('scroll_y_pos', div.scrollTop);
+		}
+	}
+
+	var tab_id = localStorage.getItem('activate_tab');
+	var scroll_x_pos = localStorage.getItem('scroll_x_pos');
+	var scroll_y_pos = localStorage.getItem('scroll_y_pos');
+	var div = document.getElementById('scroll');
+
+	if (tab_id !== null)
 		activate_tab(tab_id);
+	if (scroll_x_pos === null)
+		scroll_x_pos = 0;
+	if (scroll_y_pos === null)
+		scroll_y_pos = 0;
+	if (div !== null) {
+		div.scrollLeft = scroll_x_pos;
+		div.scrollTop = scroll_y_pos;
+	}
 </script>
 
 <style>
