@@ -32,6 +32,8 @@ function traverse($node, $last = []) {
 	}
 }
 
+$jump = [1, 2, 4, 8, 16];
+
 $data = $_GET;
 
 if (!isset($data['website']) || strlen($data['website']) == 0) {
@@ -179,14 +181,24 @@ $stat_order = ['lower bound', 'upper bound', 'uniques', 'holes', 'duplicate uniq
 <div style="height: 100vh; display: flex; flex-direction: column; padding: 1rem; box-sizing: border-box;">
 	<div style="flex: 0;">
 		<div style="display: flex;">
+<?php
+for ($i = count($jump) - 1; $i >= 0; --$i)
+	printf('
 			<div style="flex: 0;">
-				<form action="<?php echo htmlspecialchars($_SERVER['PHP_SELF']); ?>" method="GET" style="display: inline-block; margin: 0;">
-					<input type="hidden" name="website" value="<?php echo $data['website']; ?>" />
-					<input type="hidden" name="type" value="<?php echo $data['type']; ?>" />
-					<input type="hidden" name="id" value="<?php echo $data['id'] - 1; ?>" />
-					<button type="submit"><?php echo $data['id'] - 1; ?></button>
+				<form action="%s" method="GET" style="display: inline-block; margin: 0 0.1rem;">
+					<input type="hidden" name="website" value="%s" />
+					<input type="hidden" name="type" value="%s" />
+					<input type="hidden" name="id" value="%s" />
+					<button type="submit">%s</button>
 				</form>
 			</div>
+		',
+		htmlspecialchars($_SERVER['PHP_SELF']),
+		$data['website'],
+		$data['type'],
+		$data['id'] - $jump[$i], $data['id'] - $jump[$i]
+	);
+?>
 			<div style="flex: 1; text-align: center;">
 				<form action="<?php echo htmlspecialchars($_SERVER['PHP_SELF']); ?>" method="GET" style="display: inline-block; margin: 0;">
 					<label for="website">Website:</label>
@@ -198,14 +210,24 @@ $stat_order = ['lower bound', 'upper bound', 'uniques', 'holes', 'duplicate uniq
 					<button type="submit">Find</button>
 				</form>
 			</div>
+<?php
+for ($i = 0; $i < count($jump); ++$i)
+	printf('
 			<div style="flex: 0;">
-				<form action="<?php echo htmlspecialchars($_SERVER['PHP_SELF']); ?>" method="GET" style="display: inline-block; margin: 0;">
-					<input type="hidden" name="website" value="<?php echo $data['website']; ?>" />
-					<input type="hidden" name="type" value="<?php echo $data['type']; ?>" />
-					<input type="hidden" name="id" value="<?php echo $data['id'] + 1; ?>" />
-					<button type="submit"><?php echo $data['id'] + 1; ?></button>
+				<form action="%s" method="GET" style="display: inline-block; margin: 0 0.1rem;">
+					<input type="hidden" name="website" value="%s" />
+					<input type="hidden" name="type" value="%s" />
+					<input type="hidden" name="id" value="%s" />
+					<button type="submit">%s</button>
 				</form>
 			</div>
+		',
+		htmlspecialchars($_SERVER['PHP_SELF']),
+		$data['website'],
+		$data['type'],
+		$data['id'] + $jump[$i], $data['id'] + $jump[$i]
+	);
+?>
 		</div>
 	</div>
 	<div style="flex: 0;">
