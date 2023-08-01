@@ -13,19 +13,22 @@ function main() {
 		);
 	$xpath = new DOMXpath($doc);
 
-	$table = $xpath->query(sprintf('/html/body/div/div[%s]/table[%s]', '@id="detil"', has_class('table')));
+	$table = $xpath->query(sprintf('//div[%s]/table', '@id="detil"'));
 	$table = $table[0];
 
 	$array = [];
 	$subtables = [];
 
 	foreach ($xpath->query('tr', $table) as $row) {
-		$key = $xpath->query(sprintf('td[%s]', has_class('label-left')), $row);
+		$cell_key = $xpath->query(sprintf('td[%s]', has_class('label-left')), $row)[0];
+		$cell_val = $xpath->query(sprintf('td[not(%s)]', has_class('label-left')), $row)[0];
+
+		$key = $xpath->query('.//text()[normalize-space()]', $cell_key);
 		$key = trim($key[0]->nodeValue);
 
-		$val = $xpath->query(sprintf('td[not(%s)]/table', has_class('label-left')), $row);
+		$val = $xpath->query('.//table', $cell_val);
 		if (count($val) == 0)
-			$val = $xpath->query(sprintf('td[not(%s)]//text()[normalize-space()]', has_class('label-left')), $row);
+			$val = $xpath->query('.//text()[normalize-space()]', $cell_val);
 		$val = $val[0];
 
 		if ($val->nodeType == XML_TEXT_NODE)
