@@ -264,7 +264,7 @@ function debug10() {
 			pg_execute($dbconn, $stmt, ['sirup', 'penyedia', 38401264]))[0]['content']
 		);
 	// traverse($doc);
-	$xpath = new Domxpath($doc);
+	$xpath = new DOMXpath($doc);
 	$elements = $xpath->query(sprintf('/html/body/div/div[%s]/table[%s]', '@id="detil"', has_class('table')));
 	foreach ($elements as $element)
 		traverse($element);

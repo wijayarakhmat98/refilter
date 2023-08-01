@@ -74,8 +74,8 @@ function main() {
 	$password = $ini_array['password'];
 	$table = $ini_array['table'];
 
-	foreach (array_keys($ini_array) as $key)
-		if (!is_array($ini_array[$key]))
+	foreach ($ini_array as $key => $val)
+		if (!is_array($val))
 			unset($ini_array[$key]);
 
 	$dbconn = pg_connect(sprintf('dbname=%s user=%s password=%s', $dbname, $user, $password));
@@ -86,8 +86,7 @@ function main() {
 	$task = new interleave();
 	$fail = [];
 
-	foreach (array_keys($ini_array) as $urlf) {
-		$conf = $ini_array[$urlf];
+	foreach ($ini_array as $urlf => $conf) {
 		$ma = $conf['margin'];
 		$at = $conf['attempt'];
 		$co = $conf['cooldown'];
