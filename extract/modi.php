@@ -82,6 +82,22 @@ function main() {
 
 	$perizinan = simple_table($xpath, $perizinan);
 
+	foreach ($xpath->query(sprintf('.//div[%s]', has_class('timeline-label')), $alamat_element) as $i_key => $timeline_element) {
+		$key_alamat = array_keys($alamat)[$i_key];
+		$timeline = $xpath->query('.//text()[normalize-space()]', $timeline_element);
+		$key = trim($timeline[0]->nodeValue);
+		$val = trim($timeline[1]->nodeValue);
+		$alamat[$key_alamat][$key] = $val;
+	}
+
+	foreach ($xpath->query(sprintf('.//div[%s]', has_class('timeline-label')), $direksi_element) as $i_key => $timeline_element) {
+		$key_direksi = array_keys($direksi)[$i_key];
+		$timeline = $xpath->query('.//text()[normalize-space()]', $timeline_element);
+		$key = trim($timeline[0]->nodeValue);
+		$val = trim($timeline[1]->nodeValue);
+		$direksi[$key_direksi][$key] = $val;
+	}
+
 	$array = [
 		'profile' => $profile,
 		'alamat' => $alamat,
@@ -92,6 +108,10 @@ function main() {
 	echo '<div style="white-space: pre; font-family: Consolas;">';
 	print_r($array);
 	echo '</div>';
+}
+
+function has_class($name) {
+	return sprintf('contains(concat(" ", normalize-space(@class), " "), " %s ")', $name);
 }
 
 function simple_table($xpath, $table) {
