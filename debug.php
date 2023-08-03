@@ -103,38 +103,42 @@ function debug5() {
 
 /* PgSql\Result fetch */
 function debug6() {
-	$dbconn = pg_connect('dbname=test user=postgres password=1234');
+	echo '<div style="white-space: pre; font-family: Consolas;">';
+
+	$dbconn = pg_connect('dbname=refilter user=postgres password=1234');
 
 	$stmt = bin2hex(random_bytes(16));
-	$res = pg_prepare($dbconn, $stmt, 'select * from test');
+	$res = pg_prepare($dbconn, $stmt, 'select auto_id, website, type, id from raw where website = $1 and type = $2 and id >= $3 and id <= $4');
 
-	$res = pg_execute($dbconn, $stmt, []);
+	$res = pg_execute($dbconn, $stmt, ['sirup', 'penyedia', 38401264, 38401264 + 10]);
 	echo '<h1>pg_fetch_all($res)</h1>';
 	echo '<p>'; var_dump(pg_fetch_all($res)); echo '</p>';
 
-	$res = pg_execute($dbconn, $stmt, []);
+	$res = pg_execute($dbconn, $stmt, ['sirup', 'penyedia', 38401264, 38401264 + 10]);
 	echo '<h1>pg_fetch_array($res)</h1>';
 	echo '<p>'; var_dump(pg_fetch_array($res)); echo '</p>';
 
-	$res = pg_execute($dbconn, $stmt, []);
+	$res = pg_execute($dbconn, $stmt, ['sirup', 'penyedia', 38401264, 38401264 + 10]);
 	echo '<h1>pg_fetch_row($res)</h1>';
 	echo '<p>'; var_dump(pg_fetch_row($res)); echo '</p>';
 
-	$res = pg_execute($dbconn, $stmt, []);
+	$res = pg_execute($dbconn, $stmt, ['sirup', 'penyedia', 38401264, 38401264 + 10]);
 	echo '<h1>pg_fetch_assoc($res)</h1>';
 	echo '<p>'; var_dump(pg_fetch_assoc($res)); echo '</p>';
 
-	$res = pg_execute($dbconn, $stmt, []);
+	$res = pg_execute($dbconn, $stmt, ['sirup', 'penyedia', 38401264, 38401264 + 10]);
 	echo '<h1>pg_fetch_object($res)</h1>';
 	echo '<p>'; var_dump(pg_fetch_object($res)); echo '</p>';
 
-	$res = pg_execute($dbconn, $stmt, []);
+	$res = pg_execute($dbconn, $stmt, ['sirup', 'penyedia', 38401264, 38401264 + 10]);
 	echo '<h1>pg_fetch_result($res, 1, 0)</h1>';
 	echo '<p>'; var_dump(pg_fetch_result($res, 1, 0)); echo '</p>';
 
-	$res = pg_execute($dbconn, $stmt, []);
+	$res = pg_execute($dbconn, $stmt, ['sirup', 'penyedia', 38401264, 38401264 + 10]);
 	echo '<h1>pg_fetch_all_columns($res, 1)</h1>';
 	echo '<p>'; var_dump(pg_fetch_all_columns($res, 1)); echo '</p>';
+
+	echo '</div>';
 }
 
 /* INI file */
@@ -274,7 +278,7 @@ function debug10() {
 
 /* JSON */
 function debug11() {
-	$json_str = file_get_contents('extract.json');
+	$json_str = file_get_contents('maps.json');
 	$json = json_decode($json_str);
 	echo '<div style="white-space: pre; font-family: Consolas;">';
 	echo '<p>', ($json instanceof stdClass) ? 'TRUE': 'FALSE', '</p>';

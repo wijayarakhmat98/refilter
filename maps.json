@@ -33,7 +33,10 @@
 				"type": ["text"]
 			},
 			{
-				"array": { "path": ["Alamat"] },
+				"array": {
+					"path": ["Alamat"],
+					"parse": "whitespace"
+				},
 				"table": "alamat",
 				"view": "Alamat",
 				"type": ["text"]

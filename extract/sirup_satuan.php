@@ -1,16 +1,16 @@
 <?php
 
-function main() {
-	pg_prepare(
-		$dbconn = pg_connect('dbname=refilter user=postgres password=1234'),
-		$stmt = bin2hex(random_bytes(16)),
-		'select content from raw where website = $1 and type = $2 and id = $3'
-	);
+namespace sirup_satuan;
 
-	($doc = new DOMDocument('1.0', 'utf-8'))
-		->loadHTML(pg_fetch_all(
-			pg_execute($dbconn, $stmt, ['sirup', 'satuan', 162326]))[0]['content']
-		);
+use \DOMDocument, \DOMXpath;
+
+function whitespace($text) {
+	return preg_replace('/\s+/', ' ', $text);
+}
+
+function get($content) {
+	$doc = new DOMDocument('1.0', 'utf-8');
+	$doc->loadHTML($content);
 	$xpath = new DOMXpath($doc);
 
 	$list = $xpath->query('//dl')[0];
@@ -39,9 +39,7 @@ function main() {
 	$key = trim($key[0]->nodeValue);
 	$array[$key] = $email;
 
-	echo '<div style="white-space: pre; font-family: Consolas;">';
-	print_r($array);
-	echo '</div>';
+	return $array;
 }
 
 function has_class($name) {
@@ -54,7 +52,5 @@ function decode_email($encoded_email){
 		$email .= chr(hexdec(substr($encoded_email, $i, 2)) ^ $k);
 	return $email;
 }
-
-main();
 
 ?>
