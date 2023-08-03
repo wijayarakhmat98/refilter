@@ -12,6 +12,7 @@ function main() {
 	// debug8();
 	// debug9();
 	// debug10();
+	// debug11();
 }
 
 /* Content download */
@@ -268,6 +269,17 @@ function debug10() {
 	$elements = $xpath->query(sprintf('/html/body/div/div[%s]/table[%s]', '@id="detil"', has_class('table')));
 	foreach ($elements as $element)
 		traverse($element);
+	echo '</div>';
+}
+
+/* JSON */
+function debug11() {
+	$json_str = file_get_contents('extract.json');
+	$json = json_decode($json_str);
+	echo '<div style="white-space: pre; font-family: Consolas;">';
+	echo '<p>', ($json instanceof stdClass) ? 'TRUE': 'FALSE', '</p>';
+	echo '<p>', ($json[0] instanceof stdClass) ? 'TRUE': 'FALSE', '</p>';
+	print_r($json);
 	echo '</div>';
 }
 
