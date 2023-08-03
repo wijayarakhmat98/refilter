@@ -268,6 +268,12 @@
 				"type": ["datetime"]
 			},
 			{
+				"array": { "path": ["ID Paket Swakelola"] },
+				"table": "id_swakelola",
+				"view": "ID Paket Swakelola",
+				"type": ["integer"]
+			},
+			{
 				"array": {
 					"path": ["Tanggal Perbarui Paket"],
 					"parse": null
@@ -378,6 +384,15 @@
 				"table": "sumber_dana_dump",
 				"view": "Sumber Dana [dump]",
 				"type": ["array", "json"]
+			},
+			{
+				"array": {
+					"path": ["SUMBER DANA", "Pagu"],
+					"parse": null
+				},
+				"table": "total_pagu",
+				"view": "Total Pagu",
+				"type": ["integer"]
 			},
 			{
 				"array": {
