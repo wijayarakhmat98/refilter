@@ -62,7 +62,7 @@
 			{
 				"array": {
 					"path": ["Alamat"],
-					"parse": "whitespace",
+					"preprocess": "normalize_whitespace",
 					"type": "string"
 				},
 				"column": {
@@ -160,7 +160,7 @@
 			{
 				"array": {
 					"path": ["Lokasi Pekerjaan"],
-					"parse": null,
+					"preprocess": "rotate_table",
 					"type": ["json"]
 				},
 				"column": {
@@ -172,17 +172,18 @@
 			{
 				"array": {
 					"path": ["Volume Pekerjaan"],
-					"type": "integer"
+					"type": "string"
 				},
 				"column": {
 					"name": "volume",
-					"type": "integer"
+					"type": "text"
 				},
 				"view": "Volume"
 			},
 			{
 				"array": {
 					"path": ["Uraian Pekerjaan"],
+					"preprocess": "parse_uraian_spesifikasi",
 					"type": "string"
 				},
 				"column": {
@@ -194,6 +195,7 @@
 			{
 				"array": {
 					"path": ["Spesifikasi Pekerjaan"],
+					"preprocess": "parse_uraian_spesifikasi",
 					"type": "string"
 				},
 				"column": {
@@ -205,7 +207,7 @@
 			{
 				"array": {
 					"path": ["Produk Dalam Negeri"],
-					"parse": null,
+					"preprocess": "parse_boolean",
 					"type": "boolean"
 				},
 				"column": {
@@ -217,7 +219,7 @@
 			{
 				"array": {
 					"path": ["Usaha Kecil"],
-					"parse": null,
+					"preprocess": "parse_boolean",
 					"type": "boolean"
 				},
 				"column": {
@@ -229,7 +231,7 @@
 			{
 				"array": {
 					"path": ["Pengadaan Berkelanjutan atau Sustainable Public Procurement (SPP)", "Aspek Ekonomi"],
-					"parse": null,
+					"preprocess": "parse_boolean",
 					"type": "boolean"
 				},
 				"column": {
@@ -241,7 +243,7 @@
 			{
 				"array": {
 					"path": ["Pengadaan Berkelanjutan atau Sustainable Public Procurement (SPP)", "Aspek Sosial"],
-					"parse": null,
+					"preprocess": "parse_boolean",
 					"type": "boolean"
 				},
 				"column": {
@@ -253,7 +255,7 @@
 			{
 				"array": {
 					"path": ["Pengadaan Berkelanjutan atau Sustainable Public Procurement (SPP)", "Aspek Lingkungan"],
-					"parse": null,
+					"preprocess": "parse_boolean",
 					"type": "boolean"
 				},
 				"column": {
@@ -265,7 +267,7 @@
 			{
 				"array": {
 					"path": ["Pra DIPA / DPA"],
-					"parse": null,
+					"preprocess": "parse_boolean",
 					"type": "boolean"
 				},
 				"column": {
@@ -310,7 +312,7 @@
 			{
 				"array": {
 					"path": ["Sumber Dana"],
-					"parse": null,
+					"preprocess": "rotate_table",
 					"type": ["json"]
 				},
 				"column": {
@@ -344,6 +346,7 @@
 			{
 				"array": {
 					"path": ["Metode Pemilihan"],
+					"preprocess": "parse_pemilihan",
 					"type": "string"
 				},
 				"column": {
@@ -355,7 +358,7 @@
 			{
 				"array": {
 					"path": ["Pemanfaatan Barang/Jasa", "Mulai"],
-					"parse": null,
+					"preprocess": "parse_month",
 					"type": "datetime"
 				},
 				"column": {
@@ -367,7 +370,7 @@
 			{
 				"array": {
 					"path": ["Pemanfaatan Barang/Jasa", "Akhir"],
-					"parse": null,
+					"preprocess": "parse_month",
 					"type": "datetime"
 				},
 				"column": {
@@ -379,7 +382,7 @@
 			{
 				"array": {
 					"path": ["Jadwal Pelaksanaan Kontrak", "Mulai"],
-					"parse": null,
+					"preprocess": "parse_month",
 					"type": "datetime"
 				},
 				"column": {
@@ -391,7 +394,7 @@
 			{
 				"array": {
 					"path": ["Jadwal Pelaksanaan Kontrak", "Akhir"],
-					"parse": null,
+					"preprocess": "parse_month",
 					"type": "datetime"
 				},
 				"column": {
@@ -403,7 +406,7 @@
 			{
 				"array": {
 					"path": ["Jadwal Pemilihan Penyedia", "Mulai"],
-					"parse": null,
+					"preprocess": "parse_month",
 					"type": "datetime"
 				},
 				"column": {
@@ -415,7 +418,7 @@
 			{
 				"array": {
 					"path": ["Jadwal Pemilihan Penyedia", "Akhir"],
-					"parse": null,
+					"preprocess": "parse_month",
 					"type": "datetime"
 				},
 				"column": {
@@ -437,8 +440,18 @@
 			},
 			{
 				"array": {
+					"path": ["History Paket"],
+					"type": "integer"
+				},
+				"column": {
+					"name": "history",
+					"type": "integer"
+				},
+				"view": "History Paket"
+			},
+			{
+				"array": {
 					"path": ["Tanggal Perbarui Paket"],
-					"parse": null,
 					"type": "datetime"
 				},
 				"column": {
@@ -547,7 +560,7 @@
 			{
 				"array": {
 					"path": ["Lokasi Pekerjaan"],
-					"parse": null,
+					"preprocess": null,
 					"type": ["json"]
 				},
 				"column": {
@@ -559,11 +572,11 @@
 			{
 				"array": {
 					"path": ["Volume"],
-					"type": "integer"
+					"type": "string"
 				},
 				"column": {
 					"name": "volume",
-					"type": "integer"
+					"type": "text"
 				},
 				"view": "Volume"
 			},
@@ -614,7 +627,7 @@
 			{
 				"array": {
 					"path": ["SUMBER DANA"],
-					"parse": null,
+					"preprocess": null,
 					"type": ["json"]
 				},
 				"column": {
@@ -626,7 +639,7 @@
 			{
 				"array": {
 					"path": ["SUMBER DANA", "Pagu"],
-					"parse": null,
+					"preprocess": null,
 					"type": "integer"
 				},
 				"column": {
@@ -638,7 +651,7 @@
 			{
 				"array": {
 					"path": ["PELAKSANAAN PEKERJAAN", "Awal"],
-					"parse": null,
+					"preprocess": null,
 					"type": "datetime"
 				},
 				"column": {
@@ -650,7 +663,7 @@
 			{
 				"array": {
 					"path": ["PELAKSANAAN PEKERJAAN", "Akhir"],
-					"parse": null,
+					"preprocess": null,
 					"type": "datetime"
 				},
 				"column": {
@@ -726,7 +739,7 @@
 			{
 				"array": {
 					"path": ["profile", "1. Profil Perusahaan", "Tgl. Akte"],
-					"parse": null,
+					"preprocess": null,
 					"type": "datetime"
 				},
 				"column": {
@@ -988,7 +1001,7 @@
 					"cursor": ["alamat", {}, "No", {}],
 					"path": ["alamat", {}, "Update terakhir tgl"],
 					"get": "key",
-					"parse": null,
+					"preprocess": null,
 					"type": "integer"
 				},
 				"column": {
@@ -1053,7 +1066,7 @@
 			{
 				"array": {
 					"path": ["direksi", {}, "Periode", {}],
-					"parse": null,
+					"preprocess": null,
 					"type": "datetime"
 				},
 				"column": {
@@ -1065,7 +1078,7 @@
 			{
 				"array": {
 					"path": ["direksi", {}, "Periode", {}],
-					"parse": null,
+					"preprocess": null,
 					"type": "datetime"
 				},
 				"column": {
@@ -1078,7 +1091,7 @@
 				"array": {
 					"cursor": ["direksi", {}, "No", {}],
 					"path": ["direksi", {}, "Update terakhir tgl"],
-					"parse": null,
+					"preprocess": null,
 					"type": "datetime"
 				},
 				"column": {
@@ -1092,7 +1105,7 @@
 					"cursor": ["direksi", {}, "No", {}],
 					"path": ["direksi", {}, "Update terakhir tgl"],
 					"get": "key",
-					"parse": null,
+					"preprocess": null,
 					"type": "integer"
 				},
 				"column": {
@@ -1201,7 +1214,7 @@
 			{
 				"array": {
 					"path": ["perizinan", "Tgl Mulai Berlaku", {}],
-					"parse": null,
+					"preprocess": null,
 					"type": "datetime"
 				},
 				"column": {
@@ -1213,7 +1226,7 @@
 			{
 				"array": {
 					"path": ["perizinan", "Tgl Berakhir", {}],
-					"parse": null,
+					"preprocess": null,
 					"type": "datetime"
 				},
 				"column": {

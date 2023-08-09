@@ -1,16 +1,77 @@
 <?php
 
-function main() {
-	pg_prepare(
-		$dbconn = pg_connect('dbname=refilter user=postgres password=1234'),
-		$stmt = bin2hex(random_bytes(16)),
-		'select content from raw where website = $1 and type = $2 and id = $3'
-	);
+namespace sirup_penyedia;
 
-	($doc = new DOMDocument('1.0', 'utf-8'))
-		->loadHTML(pg_fetch_all(
-			pg_execute($dbconn, $stmt, ['sirup', 'penyedia', 38401264]))[0]['content']
-		);
+use \DOMDocument, \DOMXpath;
+
+function parse_uraian_spesifikasi($text) {
+	$text = normalize_whitespace($text);
+	$_text = strtolower($text);
+	if ($_text == '-')
+		return null;
+	$empty = true;
+	foreach (explode(';', $_text) as $fragment)
+		if (strlen(normalize_whitespace($fragment)) > 0) {
+			$empty = false;
+			break;
+		}
+	if ($empty)
+		return null;
+	return $text;
+}
+
+function parse_pemilihan($pemilihan) {
+	$pemilihan = normalize_whitespace($pemilihan);
+	$_pemilihan = strtolower($pemilihan);
+	return ($_pemilihan == "belum ditentukan") ? null : $pemilihan;
+}
+
+define('MONTH', [
+		'januari' => 1,
+		'februari' => 2,
+		'maret' => 3,
+		'april' => 4,
+		'mei' => 5,
+		'juni' => 6,
+		'juli' => 7,
+		'agustus' => 8,
+		'september' => 9,
+		'oktober' => 10,
+		'november' => 11,
+		'desember' => 12
+]);
+
+function parse_month($date) {
+	$date = normalize_whitespace($date);
+	$date = strtolower($date);
+	if ($date == 'n/a')
+		return null;
+	list($month, $year) = explode(' ', $date);
+	$year = (int) $year;
+	$month = MONTH[$month];
+	return sprintf('%04d-%02d-01 00:00:00.00', $year, $month);
+}
+
+function parse_boolean($boolean) {
+	$boolean = strtolower($boolean);
+	return $boolean == "ya";
+}
+
+function rotate_table($table_col) {
+	$table_row = array_fill(0, count($table_col[array_keys($table_col)[0]]), []);
+	foreach ($table_col as $column => $rows)
+		foreach ($rows as $row => $val)
+			$table_row[$row][$column] = $val;
+	return $table_row;
+}
+
+function normalize_whitespace($text) {
+	return trim(preg_replace('/\s+/', ' ', $text));
+}
+
+function get($content) {
+	$doc = new DOMDocument('1.0', 'utf-8');
+	$doc->loadHTML($content);
 	$xpath = new DOMXpath($doc);
 
 	$table = $xpath->query(sprintf('//div[%s]/table', '@id="detil"'));
@@ -29,12 +90,16 @@ function main() {
 		$val = $xpath->query('.//table', $cell_val);
 		if (count($val) == 0)
 			$val = $xpath->query('.//text()[normalize-space()]', $cell_val);
-		$val = $val[0];
-
-		if ($val->nodeType == XML_TEXT_NODE)
-			$val = trim($val->nodeValue);
+		if (count($val) == 0)
+			$val = null;
 		else
-			$subtables[] = $key;
+			$val = $val[0];
+
+		if ($val !== null)
+			if ($val->nodeType == XML_TEXT_NODE)
+				$val = trim($val->nodeValue);
+			else
+				$subtables[] = $key;
 
 		$array[$key] = $val;
 	}
@@ -99,15 +164,11 @@ function main() {
 		$array[$subtable] = $subarray;
 	}
 
-	echo '<div style="white-space: pre; font-family: Consolas;">';
-	print_r($array);
-	echo '</div>';
+	return $array;
 }
 
 function has_class($name) {
 	return sprintf('contains(concat(" ", normalize-space(@class), " "), " %s ")', $name);
 }
-
-main();
 
 ?>

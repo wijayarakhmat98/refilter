@@ -4,8 +4,8 @@ namespace sirup_satuan;
 
 use \DOMDocument, \DOMXpath;
 
-function whitespace($text) {
-	return preg_replace('/\s+/', ' ', $text);
+function normalize_whitespace($text) {
+	return trim(preg_replace('/\s+/', ' ', $text));
 }
 
 function get($content) {
