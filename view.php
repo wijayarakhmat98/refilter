@@ -273,19 +273,17 @@ for ($i = 0; $i < count($jump); ++$i)
 					<div style="height: 100%; display: flex; flex-direction: column;">
 						<div style="flex: 0;">
 							<div style="margin: 0 0 1rem 0;">
-								<button onclick="javascript:activate_tab('tab_1');">Source</button>
-								<button onclick="javascript:activate_tab('tab_2');">Tree</button>
+								<button onclick="javascript:change_tab('tab_1');">Source</button>
+								<button onclick="javascript:change_tab('tab_2');">Tree</button>
 							</div>
 						</div>
 						<div style="flex: 1; overflow: auto;">
-							<div id="scroll" style="width: 100%; height: 100%; overflow: auto;">
-								<div id="tab_control">
-									<div id="tab_1" style="display: block">
-										<div style="white-space: pre; font-family: Consolas;"><?php echo htmlspecialchars($content); ?></div>
-									</div>
-									<div id="tab_2" style="display: none">
-										<div style="white-space: pre; font-family: Consolas;"><?php traverse($doc); ?></div>
-									</div>
+							<div id="tab_control">
+								<div id="tab_1" class="scroll" style="width: 100%; height: 100%; overflow: auto; display: block;">
+									<div style="white-space: pre; font-family: Consolas;"><?php echo htmlspecialchars($content); ?></div>
+								</div>
+								<div id="tab_2" class="scroll" style="width: 100%; height: 100%; overflow: auto; display: none;">
+									<div style="white-space: pre; font-family: Consolas;"><?php traverse($doc); ?></div>
 								</div>
 							</div>
 						</div>
@@ -299,42 +297,59 @@ for ($i = 0; $i < count($jump); ++$i)
 </div>
 
 <script type="text/javascript">
+	function save_scroll() {
+		var scroll_pos = localStorage.getItem('scroll_pos');
+		scroll_pos = (scroll_pos === null) ? {} : JSON.parse(scroll_pos);
+		var div = document.getElementsByClassName('scroll');
+		for (var i = 0; i < div.length; ++i)
+			if (div[i]['style']['display'] != 'none')
+				scroll_pos[div[i]['id']] = {
+					x: div[i]['scrollLeft'],
+					y: div[i]['scrollTop']
+				};
+		scroll_pos = JSON.stringify(scroll_pos);
+		localStorage.setItem('scroll_pos', scroll_pos);
+	}
+
+	function load_scroll() {
+		var scroll_pos = localStorage.getItem('scroll_pos');
+		scroll_pos = (scroll_pos === null) ? {} : JSON.parse(scroll_pos);
+		var div = document.getElementsByClassName('scroll');
+		for (var i = 0; i < div.length; ++i)
+			if (div[i]['style']['display'] != 'none')
+				if (div[i]['id'] in scroll_pos) {
+					div[i]['scrollLeft'] = scroll_pos[div[i]['id']]['x'];
+					div[i]['scrollTop'] = scroll_pos[div[i]['id']]['y'];
+				}
+	}
+
 	function activate_tab(tab_id) {
 		var tab_control = document.getElementById('tab_control');
 		if (tab_control !== null) {
-			localStorage.setItem('activate_tab', tab_id);
-			var activate_tab = document.getElementById(tab_id);
+			var active_tab = document.getElementById(tab_id);
 			for (var i = 0; i < tab_control.childNodes.length; ++i) {
 				var node = tab_control.childNodes[i];
 				if (node.nodeType == Node.ELEMENT_NODE)
-					node.style.display = (node == activate_tab) ? 'block' : 'none';
+					node.style.display = (node == active_tab) ? 'block' : 'none';
 			}
 		}
 	}
 
-	window.onbeforeunload = function(e) {
-		var div = document.getElementById('scroll');
-		if (div !== null) {
-			localStorage.setItem('scroll_x_pos', div.scrollLeft);
-			localStorage.setItem('scroll_y_pos', div.scrollTop);
-		}
+	function change_tab(tab_id) {
+		localStorage.setItem('active_tab', tab_id);
+		save_scroll();
+		activate_tab(tab_id);
+		load_scroll();
 	}
 
-	var tab_id = localStorage.getItem('activate_tab');
-	var scroll_x_pos = localStorage.getItem('scroll_x_pos');
-	var scroll_y_pos = localStorage.getItem('scroll_y_pos');
-	var div = document.getElementById('scroll');
+	window.onbeforeunload = function (event) {
+		save_scroll();
+	}
 
+	var tab_id = localStorage.getItem('active_tab');
 	if (tab_id !== null)
 		activate_tab(tab_id);
-	if (scroll_x_pos === null)
-		scroll_x_pos = 0;
-	if (scroll_y_pos === null)
-		scroll_y_pos = 0;
-	if (div !== null) {
-		div.scrollLeft = scroll_x_pos;
-		div.scrollTop = scroll_y_pos;
-	}
+	load_scroll();
 </script>
 
 <style>
