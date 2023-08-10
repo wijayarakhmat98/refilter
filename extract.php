@@ -8,8 +8,8 @@ function main() {
 	$conf_src = file_get_contents('maps.json');
 	$conf = json_decode($conf_src);
 
-	// $conf = $conf[0];
-	$conf = $conf[1];
+	$conf = $conf[0];
+	// $conf = $conf[1];
 
 	$dbconn = pg_connect('dbname=refilter user=postgres password=1234');
 	$stmt = bin2hex(random_bytes(16));
@@ -46,7 +46,7 @@ function main() {
 	switch ([$source_website, $source_type]) {
 		case ['sirup', 'satuan']:
 			$lb = 162326;
-			$ub = 162326 + 10;
+			$ub = 162326 + 10000;
 			break;
 		case ['sirup', 'penyedia']:
 			$lb = 38401264;
@@ -78,9 +78,14 @@ function main() {
 			echo "SKIP\n";
 			continue;
 		}
+		$res = pg_fetch_all(pg_execute($dbconn, $stmt, [$source_website, $source_type, $web_id]));
+		if (count($res) == 0) {
+			echo "NOT EXISTS\n";
+			continue;
+		}
 		else
 			echo "INSERT\n";
-		$res = pg_fetch_all(pg_execute($dbconn, $stmt, [$source_website, $source_type, $web_id]))[0];
+		$res = $res[0];
 		$raw_id = $res['auto_id'];
 		$content = $res['content'];
 		$array = $get($content);
@@ -102,7 +107,8 @@ function main() {
 			}
 			$vals[] = $val;
 		}
-		$insert(...$vals);
+		if (!$insert(...$vals))
+			print_r($array);
 	}
 
 	echo '</div>';

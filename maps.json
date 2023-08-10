@@ -51,6 +51,7 @@
 			{
 				"array": {
 					"path": ["Nama PA/KPA"],
+					"preprocess": "parse_nama",
 					"type": "string"
 				},
 				"column": {
@@ -62,7 +63,7 @@
 			{
 				"array": {
 					"path": ["Alamat"],
-					"preprocess": "normalize_whitespace",
+					"preprocess": "parse_alamat",
 					"type": "string"
 				},
 				"column": {
