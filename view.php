@@ -263,7 +263,7 @@ for ($i = 0; $i < count($jump); ++$i)
 							<p style="margin: 0 0 1rem 0;"><?php printf('<a href="%s">%s</a>', $data['url'], $data['url']); ?></p>
 						</div>
 						<div style="flex: 1;">
-							<iframe style="width: 100%; height: 100%;" srcdoc="<?php echo htmlspecialchars($clean) ?>"></iframe>
+							<iframe id="frame" class="scroll" style="width: 100%; height: 100%;" srcdoc="<?php echo htmlspecialchars($clean) ?>"></iframe>
 						</div>
 					</div>
 				</div>
@@ -303,10 +303,20 @@ for ($i = 0; $i < count($jump); ++$i)
 		var div = document.getElementsByClassName('scroll');
 		for (var i = 0; i < div.length; ++i)
 			if (div[i]['style']['display'] != 'none')
-				scroll_pos[div[i]['id']] = {
-					x: div[i]['scrollLeft'],
-					y: div[i]['scrollTop']
-				};
+				switch (div[i]['nodeName']) {
+				case 'DIV':
+					scroll_pos[div[i]['id']] = {
+						x: div[i]['scrollLeft'],
+						y: div[i]['scrollTop']
+					};
+					break;
+				case 'IFRAME':
+					scroll_pos[div[i]['id']] = {
+						x: div[i]['contentWindow']['scrollX'],
+						y: div[i]['contentWindow']['scrollY']
+					};
+					break;
+				}
 		scroll_pos = JSON.stringify(scroll_pos);
 		localStorage.setItem('scroll_pos', scroll_pos);
 	}
@@ -317,10 +327,22 @@ for ($i = 0; $i < count($jump); ++$i)
 		var div = document.getElementsByClassName('scroll');
 		for (var i = 0; i < div.length; ++i)
 			if (div[i]['style']['display'] != 'none')
-				if (div[i]['id'] in scroll_pos) {
-					div[i]['scrollLeft'] = scroll_pos[div[i]['id']]['x'];
-					div[i]['scrollTop'] = scroll_pos[div[i]['id']]['y'];
-				}
+				if (div[i]['id'] in scroll_pos)
+					switch (div[i]['nodeName']) {
+					case 'DIV':
+						div[i]['scrollLeft'] = scroll_pos[div[i]['id']]['x'];
+						div[i]['scrollTop'] = scroll_pos[div[i]['id']]['y'];
+						break;
+					case 'IFRAME':
+						div[i]['onload'] = ((iframe, x, y) =>
+							() => iframe['contentWindow']['scroll'](x, y)
+						)(
+							div[i],
+							scroll_pos[div[i]['id']]['x'],
+							scroll_pos[div[i]['id']]['y']
+						);
+						break;
+					}
 	}
 
 	function activate_tab(tab_id) {
