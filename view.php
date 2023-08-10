@@ -32,6 +32,15 @@ function traverse($node, $last = []) {
 	}
 }
 
+function better_dump($obj) {
+	ob_start();
+	var_dump($obj);
+	$dump = ob_get_contents();
+	ob_end_clean();
+	$dump = preg_replace('/]=>\n\s*/', '] => ', $dump);
+	echo $dump;
+}
+
 $jump = [1, 2, 4, 8, 16];
 
 $data = $_GET;
@@ -65,6 +74,9 @@ if (!isset($data['id']) || strlen($data['id']) == 0)
 	}
 else
 	$data['id'] = (int) $data['id'];
+
+if (!isset($data['extract']) || strlen($data['extract']) == 0)
+	$data['extract'] = null;
 
 switch ([$data['website'], $data['type']]) {
 case ['sirup', 'satuan']:
@@ -129,6 +141,15 @@ if ($res != null)
 		break;
 	}
 
+$extract_factory = sprintf('extract/%s.php', $data['extract']);
+if ($content !== null && file_exists($extract_factory)) {
+	require_once($extract_factory);
+	$get = sprintf('%s\get', $data['extract']);
+	$extract = @$get($content);
+}
+else
+	$extract = null;
+
 $stmt2 = bin2hex(random_bytes(16));
 pg_prepare($dbconn, $stmt2, '
 	select distinct
@@ -189,6 +210,7 @@ for ($i = count($jump) - 1; $i >= 0; --$i)
 					<input type="hidden" name="website" value="%s" />
 					<input type="hidden" name="type" value="%s" />
 					<input type="hidden" name="id" value="%s" />
+					<input type="hidden" name="extract" value="%s" />
 					<button type="submit">%s</button>
 				</form>
 			</div>
@@ -196,18 +218,20 @@ for ($i = count($jump) - 1; $i >= 0; --$i)
 		htmlspecialchars($_SERVER['PHP_SELF']),
 		$data['website'],
 		$data['type'],
-		$data['id'] - $jump[$i], $data['id'] - $jump[$i]
+		$data['id'] - $jump[$i],
+		$data['extract'],
+		$data['id'] - $jump[$i]
 	);
 ?>
 			<div style="flex: 1; text-align: center;">
-				<form action="<?php echo htmlspecialchars($_SERVER['PHP_SELF']); ?>" method="GET" style="display: inline-block; margin: 0;">
+				<form id="form" action="<?php echo htmlspecialchars($_SERVER['PHP_SELF']); ?>" method="GET" style="display: inline-block; margin: 0;">
 					<label for="website">Website:</label>
 					<input type="text" name="website" value="<?php echo $data['website']; ?>" />
 					<label for="type">Type:</label>
 					<input type="text" name="type" value="<?php echo $data['type']; ?>" />
 					<label for="id">ID:</label>
 					<input type="number" name="id" value="<?php echo $data['id']; ?>" />
-					<button type="submit">Find</button>
+					<button type="submit">Go</button>
 				</form>
 			</div>
 <?php
@@ -218,6 +242,7 @@ for ($i = 0; $i < count($jump); ++$i)
 					<input type="hidden" name="website" value="%s" />
 					<input type="hidden" name="type" value="%s" />
 					<input type="hidden" name="id" value="%s" />
+					<input type="hidden" name="extract" value="%s" />
 					<button type="submit">%s</button>
 				</form>
 			</div>
@@ -225,7 +250,9 @@ for ($i = 0; $i < count($jump); ++$i)
 		htmlspecialchars($_SERVER['PHP_SELF']),
 		$data['website'],
 		$data['type'],
-		$data['id'] + $jump[$i], $data['id'] + $jump[$i]
+		$data['id'] + $jump[$i],
+		$data['extract'],
+		$data['id'] + $jump[$i]
 	);
 ?>
 		</div>
@@ -272,9 +299,22 @@ for ($i = 0; $i < count($jump); ++$i)
 				<div style="width: 100%; height: 100%;">
 					<div style="height: 100%; display: flex; flex-direction: column;">
 						<div style="flex: 0;">
-							<div style="margin: 0 0 1rem 0;">
-								<button onclick="javascript:change_tab('tab_1');">Source</button>
-								<button onclick="javascript:change_tab('tab_2');">Tree</button>
+							<div style="height: 100%; margin: 0 0 1rem 0;">
+								<div style="display: flex;">
+									<div style="flex: 0;">
+										<button style="margin: 0 0.1rem;" onclick="javascript:change_tab('tab_1');">Source</button>
+									</div>
+									<div style="flex: 0;">
+										<button style="margin: 0 0.1rem;" onclick="javascript:change_tab('tab_2');">Tree</button>
+									</div>
+									<div style="flex: 0;">
+										<button style="margin: 0 0.1rem;" onclick="javascript:change_tab('tab_3');">Extract</button>
+									</div>
+									<div style="flex: 1; text-align: right;">
+										<label for="extract">Extract:</label>
+										<input form="form" type="text" name="extract" value="<?php echo $data['extract']; ?>" />
+									</div>
+								</div>
 							</div>
 						</div>
 						<div style="flex: 1; overflow: auto;">
@@ -284,6 +324,9 @@ for ($i = 0; $i < count($jump); ++$i)
 								</div>
 								<div id="tab_2" class="scroll" style="width: 100%; height: 100%; overflow: auto; display: none;">
 									<div style="white-space: pre; font-family: Consolas;"><?php traverse($doc); ?></div>
+								</div>
+								<div id="tab_3" class="scroll" style="width: 100%; height: 100%; overflow: auto; display: none;">
+									<div style="white-space: pre; font-family: Consolas;"><?php better_dump($extract); ?></div>
 								</div>
 							</div>
 						</div>
