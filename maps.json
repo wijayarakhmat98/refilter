@@ -306,7 +306,7 @@
 				},
 				"column": {
 					"name": "pagu",
-					"type": ["integer"]
+					"type": ["bigint"]
 				},
 				"view": "Pagu"
 			},
@@ -340,7 +340,7 @@
 				},
 				"column": {
 					"name": "total_pagu",
-					"type": "integer"
+					"type": "bigint"
 				},
 				"view": "Total Pagu"
 			},
@@ -621,7 +621,7 @@
 				},
 				"column": {
 					"name": "pagu",
-					"type": ["integer"]
+					"type": ["bigint"]
 				},
 				"view": "Pagu"
 			},
@@ -645,7 +645,7 @@
 				},
 				"column": {
 					"name": "total_pagu",
-					"type": "integer"
+					"type": "bigint"
 				},
 				"view": "Total Pagu"
 			},

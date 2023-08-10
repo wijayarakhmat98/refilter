@@ -8,8 +8,8 @@ function main() {
 	$conf_src = file_get_contents('maps.json');
 	$conf = json_decode($conf_src);
 
-	$conf = $conf[0];
-	// $conf = $conf[1];
+	// $conf = $conf[0];
+	$conf = $conf[1];
 
 	$dbconn = pg_connect('dbname=refilter user=postgres password=1234');
 	$stmt = bin2hex(random_bytes(16));
@@ -50,7 +50,7 @@ function main() {
 			break;
 		case ['sirup', 'penyedia']:
 			$lb = 38401264;
-			$ub = 38401276 + 1;
+			$ub = 38401264 + 10000;
 			break;
 	}
 
