@@ -5,14 +5,15 @@ namespace sirup_satuan;
 use \DOMDocument, \DOMXpath;
 
 function parse_nama($nama) {
+	if ($nama === null)
+		return null;
 	$nama = normalize_whitespace($nama);
 	$_nama = strtolower($nama);
-	if (strlen($_nama) == 0)
-		return null;
-	if ($_nama == '-')
-		return null;
-	if ($_nama == 'update')
-		return null;
+	switch ($_nama) {
+		case $_nama == '-':
+		case $_nama == 'update':
+			return null;
+	}
 	$x = true;
 	foreach (str_split($_nama) as $char)
 		if ($char != 'x') {
@@ -25,22 +26,19 @@ function parse_nama($nama) {
 }
 
 function parse_alamat($alamat) {
+	if ($alamat === null)
+		return null;
 	$alamat = normalize_whitespace($alamat);
 	$_alamat = strtolower($alamat);
-	if (strlen($_alamat) == 0)
-		return null;
-	if ($_alamat == '.')
-		return null;
-	if ($_alamat == '-')
-		return null;
-	if ($_alamat == 'update')
-		return null;
-	if ($_alamat == 'alamat')
-		return null;
-	if ($_alamat == 'jln')
-		return null;
-	if ($_alamat == 'jl.')
-		return null;
+	switch ($_alamat) {
+		case $_alamat == '.':
+		case $_alamat == '-':
+		case $_alamat == 'update':
+		case $_alamat == 'alamat':
+		case $_alamat == 'jln':
+		case $_alamat == 'jl.':
+			return null;
+	}
 	$x = true;
 	foreach (str_split($_alamat) as $char)
 		if ($char != 'x') {

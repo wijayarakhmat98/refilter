@@ -7,16 +7,43 @@ use \DOMDocument, \DOMXpath;
 function parse_uraian_spesifikasi($text) {
 	$text = normalize_whitespace($text);
 	$_text = strtolower($text);
-	if ($_text == '-')
-		return null;
+	switch ($_text) {
+		case '-':
+		case '.':
+		case '=':
+		case "'-":
+			return null;
+	}
 	$empty = true;
-	foreach (explode(';', $_text) as $fragment)
-		if (strlen(normalize_whitespace($fragment)) > 0) {
-			$empty = false;
-			break;
+	foreach (preg_split('/[,;]/', $_text) as $fragment) {
+		$fragment = normalize_whitespace($fragment);
+		switch (true) {
+			case strlen($fragment) == 0:
+			case $fragment == '-':
+				continue 2;
 		}
+		$empty = false;
+		break;
+	}
 	if ($empty)
 		return null;
+	if (preg_match('/kak/', $_text)) {
+		switch (true) {
+			case strlen($_text) <= 10:
+			case preg_match('/di kak/', $_text):
+			case preg_match('/dengan kak/', $_text):
+			case preg_match('/pada kak/', $_text):
+			case preg_match('/uraian/', $_text):
+			case preg_match('/lihat/', $_text):
+			case preg_match('/sesuai/', $_text):
+			case preg_match('/mengacu/', $_text):
+			case preg_match('/terlampir/', $_text):
+			case preg_match('/tercantum/', $_text):
+			case preg_match('/tuang/', $_text):
+			case preg_match('/seperti/', $_text):
+				return null;
+		}
+	}
 	return $text;
 }
 

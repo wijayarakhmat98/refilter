@@ -9,8 +9,8 @@ function main() {
 	$conf_src = file_get_contents('maps.json');
 	$conf = json_decode($conf_src, true);
 
-	$conf = $conf[0];
-	// $conf = $conf[1];
+	// $conf = $conf[0];
+	$conf = $conf[1];
 
 	require_once(sprintf('extract/%s.php', $conf['factory']));
 
