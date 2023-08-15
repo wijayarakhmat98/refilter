@@ -10,20 +10,25 @@ function main() {
 	$conf = json_decode($conf_src, true);
 
 	// $conf = $conf[0];
-	$conf = $conf[1];
+	// $conf = $conf[1];
+	$conf = $conf[3];
 
 	require_once(sprintf('extract/%s.php', $conf['factory']));
 
 	$src = $conf['source'];
 
-	switch ([$src['website'], $src['type']]) {
-		case ['sirup', 'satuan']:
+	switch ([$src['website'], $src['type'], $conf['table']]) {
+		case ['sirup', 'satuan', 'sirup_satuan']:
 			$lb = 162326;
 			$ub = 162326 + 10000;
 			break;
-		case ['sirup', 'penyedia']:
+		case ['sirup', 'penyedia', 'sirup_penyedia']:
 			$lb = 38401264;
 			$ub = 38401264 + 10000;
+			break;
+		case ['modi', null, 'modi_profil']:
+			$lb = 14357;
+			$ub = 14357 + 3000;
 			break;
 	}
 

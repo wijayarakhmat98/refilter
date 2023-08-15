@@ -823,7 +823,7 @@
 		"factory": "modi",
 		"source": {
 			"website": "modi",
-			"type": "null"
+			"type": null
 		},
 		"table": "modi_profil",
 		"maps": [
@@ -881,21 +881,21 @@
 			{
 				"array": {
 					"path": ["profile", "1. Profil Perusahaan", "No. Akte"],
-					"type": "integer"
+					"postprocess": "clean_akte",
+					"type": "string"
 				},
 				"column": {
 					"name": "akte",
-					"type": "integer"
+					"type": "text"
 				},
 				"view": {
 					"name": "Nomor Akte",
-					"type": "integer"
+					"type": "text"
 				}
 			},
 			{
 				"array": {
 					"path": ["profile", "1. Profil Perusahaan", "Tgl. Akte"],
-					"preprocess": null,
 					"type": "datetime"
 				},
 				"column": {
@@ -914,7 +914,7 @@
 		"factory": "modi",
 		"source": {
 			"website": "modi",
-			"type": "null"
+			"type": null
 		},
 		"table": "modi_saham",
 		"maps": [
@@ -1018,7 +1018,7 @@
 		"factory": "modi",
 		"source": {
 			"website": "modi",
-			"type": "null"
+			"type": null
 		},
 		"table": "modi_npwp",
 		"maps": [
@@ -1122,7 +1122,7 @@
 		"factory": "modi",
 		"source": {
 			"website": "modi",
-			"type": "null"
+			"type": null
 		},
 		"table": "modi_alamat",
 		"maps": [
@@ -1230,7 +1230,7 @@
 		"factory": "modi",
 		"source": {
 			"website": "modi",
-			"type": "null"
+			"type": null
 		},
 		"table": "modi_direksi",
 		"maps": [
@@ -1355,7 +1355,7 @@
 		"factory": "modi",
 		"source": {
 			"website": "modi",
-			"type": "null"
+			"type": null
 		},
 		"table": "modi_perizinan",
 		"maps": [

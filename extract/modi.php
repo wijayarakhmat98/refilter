@@ -4,9 +4,28 @@ namespace modi;
 
 use \DOMDocument, \DOMXpath;
 
+function clean_akte($akte) {
+	if ($akte === null)
+		return null;
+	$akte = normalize_whitespace($akte);
+	$_akte = strtolower($akte);
+	switch ($_akte) {
+		case '-':
+		case '.':
+		case '0':
+		case "'-":
+			return null;
+	}
+	return $akte;
+}
+
+function normalize_whitespace($text) {
+	return trim(preg_replace('/\s+/', ' ', $text));
+}
+
 function get($content) {
 	$doc = new DOMDocument('1.0', 'utf-8');
-	$doc->loadHTML($content);
+	@$doc->loadHTML($content);
 	$xpath = new DOMXpath($doc);
 
 	$profile = [];
