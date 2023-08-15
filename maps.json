@@ -35,7 +35,10 @@
 					"name": "kldi",
 					"type": "text"
 				},
-				"view": "KLDI"
+				"view": {
+					"name": "KLDI",
+					"type": "text"
+				}
 			},
 			{
 				"array": {
@@ -46,7 +49,10 @@
 					"name": "satuan",
 					"type": "text"
 				},
-				"view": "Satuan Kerja"
+				"view": {
+					"name": "Satuan Kerja",
+					"type": "text"
+				}
 			},
 			{
 				"array": {
@@ -58,7 +64,10 @@
 					"name": "nama",
 					"type": "text"
 				},
-				"view": "Nama PA/KPA"
+				"view": {
+					"name": "Nama PA/KPA",
+					"type": "human_name"
+				}
 			},
 			{
 				"array": {
@@ -70,7 +79,10 @@
 					"name": "alamat",
 					"type": "text"
 				},
-				"view": "Alamat"
+				"view": {
+					"name": "Alamat",
+					"type": "address"
+				}
 			},
 			{
 				"array": {
@@ -81,7 +93,10 @@
 					"name": "email",
 					"type": "text"
 				},
-				"view": "e-mail"
+				"view": {
+					"name": "e-mail",
+					"type": "email"
+				}
 			}
 		]
 	},
@@ -112,7 +127,10 @@
 					"name": "id",
 					"type": "integer"
 				},
-				"view": "Kode RUP"
+				"view": {
+					"name": "Kode RUP",
+					"type": "integer"
+				}
 			},
 			{
 				"array": {
@@ -123,7 +141,10 @@
 					"name": "paket",
 					"type": "text"
 				},
-				"view": "Nama Paket"
+				"view": {
+					"name": "Nama Paket",
+					"type": "text"
+				}
 			},
 			{
 				"array": {
@@ -134,7 +155,10 @@
 					"name": "kldi",
 					"type": "text"
 				},
-				"view": "KLPD"
+				"view": {
+					"name": "KLPD",
+					"type": "text"
+				}
 			},
 			{
 				"array": {
@@ -145,7 +169,10 @@
 					"name": "satuan",
 					"type": "text"
 				},
-				"view": "Satuan Kerja"
+				"view": {
+					"name": "Satuan Kerja",
+					"type": "text"
+				}
 			},
 			{
 				"array": {
@@ -156,7 +183,10 @@
 					"name": "tahun",
 					"type": "integer"
 				},
-				"view": "Tahun Anggaran"
+				"view": {
+					"name": "Tahun Anggaran",
+					"type": "time_resolution_year"
+				}
 			},
 			{
 				"array": {
@@ -167,8 +197,7 @@
 				"column": {
 					"name": "lokasi_pekerjaan_dump",
 					"type": ["json"]
-				},
-				"view": "Lokasi Pekerjaan [dump]"
+				}
 			},
 			{
 				"array": {
@@ -179,7 +208,10 @@
 					"name": "volume",
 					"type": "text"
 				},
-				"view": "Volume"
+				"view": {
+					"name": "Volume",
+					"type": "text"
+				}
 			},
 			{
 				"array": {
@@ -191,7 +223,10 @@
 					"name": "uraian",
 					"type": "text"
 				},
-				"view": "Uraian Pekerjaan"
+				"view": {
+					"name": "Uraian Pekerjaan",
+					"type": "text"
+				}
 			},
 			{
 				"array": {
@@ -203,7 +238,10 @@
 					"name": "spesifikasi",
 					"type": "text"
 				},
-				"view": "Spesifikasi Pekerjaan"
+				"view": {
+					"name": "Spesifikasi Pekerjaan",
+					"type": "text"
+				}
 			},
 			{
 				"array": {
@@ -215,7 +253,10 @@
 					"name": "dalam_negeri",
 					"type": "boolean"
 				},
-				"view": "Produk Dalam Negeri"
+				"view": {
+					"name": "Produk Dalam Negeri",
+					"type": "boolean"
+				}
 			},
 			{
 				"array": {
@@ -227,7 +268,10 @@
 					"name": "usaha_kecil",
 					"type": "boolean"
 				},
-				"view": "Usaha Kecil"
+				"view": {
+					"name": "Usaha Kecil",
+					"type": "boolean"
+				}
 			},
 			{
 				"array": {
@@ -239,7 +283,10 @@
 					"name": "spp_ekonomi",
 					"type": "boolean"
 				},
-				"view": "SPP Ekonomi"
+				"view": {
+					"name": "SPP Ekonomi",
+					"type": "boolean"
+				}
 			},
 			{
 				"array": {
@@ -251,7 +298,10 @@
 					"name": "spp_sosial",
 					"type": "boolean"
 				},
-				"view": "SPP Sosial"
+				"view": {
+					"name": "SPP Sosial",
+					"type": "boolean"
+				}
 			},
 			{
 				"array": {
@@ -263,7 +313,10 @@
 					"name": "spp_lingkungan",
 					"type": "boolean"
 				},
-				"view": "SPP Lingkungan"
+				"view": {
+					"name": "SPP Lingkungan",
+					"type": "boolean"
+				}
 			},
 			{
 				"array": {
@@ -275,7 +328,10 @@
 					"name": "pra_dd",
 					"type": "boolean"
 				},
-				"view": "Pra DIPA / DPA"
+				"view": {
+					"name": "Pra DIPA / DPA",
+					"type": "boolean"
+				}
 			},
 			{
 				"array": {
@@ -286,7 +342,10 @@
 					"name": "kuappas",
 					"type": "text"
 				},
-				"view": "Nomer KUAPPAS"
+				"view": {
+					"name": "Nomer KUAPPAS",
+					"type": "text"
+				}
 			},
 			{
 				"array": {
@@ -297,7 +356,10 @@
 					"name": "sumber_dana",
 					"type": ["text"]
 				},
-				"view": "Sumber Dana"
+				"view": {
+					"name": "Sumber Dana",
+					"type": ["text"]
+				}
 			},
 			{
 				"array": {
@@ -308,7 +370,10 @@
 					"name": "pagu",
 					"type": ["bigint"]
 				},
-				"view": "Pagu"
+				"view": {
+					"name": "Pagu",
+					"type": ["integer"]
+				}
 			},
 			{
 				"array": {
@@ -319,8 +384,7 @@
 				"column": {
 					"name": "sumber_dana_dump",
 					"type": ["json"]
-				},
-				"view": "Sumber Dana [dump]"
+				}
 			},
 			{
 				"array": {
@@ -331,7 +395,10 @@
 					"name": "jenis",
 					"type": "text"
 				},
-				"view": "Jenis Pengadaan"
+				"view": {
+					"name": "Jenis Pengadaan",
+					"type": "text"
+				}
 			},
 			{
 				"array": {
@@ -342,7 +409,10 @@
 					"name": "total_pagu",
 					"type": "bigint"
 				},
-				"view": "Total Pagu"
+				"view": {
+					"name": "Total Pagu",
+					"type": "integer"
+				}
 			},
 			{
 				"array": {
@@ -354,7 +424,10 @@
 					"name": "pemilihan",
 					"type": "text"
 				},
-				"view": "Metode Pemilihan"
+				"view": {
+					"name": "Metode Pemilihan",
+					"type": "text"
+				}
 			},
 			{
 				"array": {
@@ -366,7 +439,10 @@
 					"name": "pemanfaatan_awal",
 					"type": "date"
 				},
-				"view": "Awal Pemanfaatan"
+				"view": {
+					"name": "Awal Pemanfaatan",
+					"type": "time_resolution_month"
+				}
 			},
 			{
 				"array": {
@@ -378,7 +454,10 @@
 					"name": "pemanfaatan_akhir",
 					"type": "date"
 				},
-				"view": "Akhir Pemanfaatan"
+				"view": {
+					"name": "Akhir Pemanfaatan",
+					"type": "time_resolution_month"
+				}
 			},
 			{
 				"array": {
@@ -390,7 +469,10 @@
 					"name": "pelaksanaan_awal",
 					"type": "date"
 				},
-				"view": "Awal Pelaksanaan"
+				"view": {
+					"name": "Awal Pelaksanaan",
+					"type": "time_resolution_month"
+				}
 			},
 			{
 				"array": {
@@ -402,7 +484,10 @@
 					"name": "pelaksanaan_akhir",
 					"type": "date"
 				},
-				"view": "Akhir Pelaksanaan"
+				"view": {
+					"name": "Akhir Pelaksanaan",
+					"type": "time_resolution_month"
+				}
 			},
 			{
 				"array": {
@@ -414,7 +499,10 @@
 					"name": "pemilihan_awal",
 					"type": "date"
 				},
-				"view": "Awal Pemilihan"
+				"view": {
+					"name": "Awal Pemilihan",
+					"type": "time_resolution_month"
+				}
 			},
 			{
 				"array": {
@@ -426,7 +514,10 @@
 					"name": "pemilihan_akhir",
 					"type": "date"
 				},
-				"view": "Akhir Pemilihan"
+				"view": {
+					"name": "Akhir Pemilihan",
+					"type": "time_resolution_month"
+				}
 			},
 			{
 				"array": {
@@ -437,7 +528,10 @@
 					"name": "id_swakelola",
 					"type": "integer"
 				},
-				"view": "ID Paket Swakelola"
+				"view": {
+					"name": "ID Paket Swakelola",
+					"type": "integer"
+				}
 			},
 			{
 				"array": {
@@ -448,7 +542,10 @@
 					"name": "history",
 					"type": "integer"
 				},
-				"view": "History Paket"
+				"view": {
+					"name": "History Paket",
+					"type": "integer"
+				}
 			},
 			{
 				"array": {
@@ -459,7 +556,10 @@
 					"name": "perbarui",
 					"type": "timestamp"
 				},
-				"view": "Tanggal Perbarui Paket"
+				"view": {
+					"name": "Tanggal Perbarui Paket",
+					"type": "time_resolution_microsecond"
+				}
 			}
 		]
 	},
@@ -490,7 +590,10 @@
 					"name": "id",
 					"type": "integer"
 				},
-				"view": "Kode RUP"
+				"view": {
+					"name": "Kode RUP",
+					"type": "integer"
+				}
 			},
 			{
 				"array": {
@@ -501,7 +604,10 @@
 					"name": "paket",
 					"type": "text"
 				},
-				"view": "Paket"
+				"view": {
+					"name": "Paket",
+					"type": "text"
+				}
 			},
 			{
 				"array": {
@@ -512,7 +618,10 @@
 					"name": "kldi",
 					"type": "text"
 				},
-				"view": "KLDI"
+				"view": {
+					"name": "KLDI",
+					"type": "text"
+				}
 			},
 			{
 				"array": {
@@ -523,7 +632,10 @@
 					"name": "satuan",
 					"type": "text"
 				},
-				"view": "Satuan Kerja"
+				"view": {
+					"name": "Satuan Kerja",
+					"type": "text"
+				}
 			},
 			{
 				"array": {
@@ -534,7 +646,10 @@
 					"name": "tipe",
 					"type": "integer"
 				},
-				"view": "Tipe Swakelola"
+				"view": {
+					"name": "Tipe Swakelola",
+					"type": "integer"
+				}
 			},
 			{
 				"array": {
@@ -545,7 +660,10 @@
 					"name": "penyelenggara",
 					"type": "text"
 				},
-				"view": "Penyelenggara Swakelola"
+				"view": {
+					"name": "Penyelenggara Swakelola",
+					"type": "text"
+				}
 			},
 			{
 				"array": {
@@ -556,7 +674,10 @@
 					"name": "tahun",
 					"type": "integer"
 				},
-				"view": "Tahun Anggaran"
+				"view": {
+					"name": "Tahun Anggaran",
+					"type": "time_resolution_year"
+				}
 			},
 			{
 				"array": {
@@ -567,8 +688,7 @@
 				"column": {
 					"name": "lokasi_pekerjaan_dump",
 					"type": ["json"]
-				},
-				"view": "Lokasi Pekerjaan [dump]"
+				}
 			},
 			{
 				"array": {
@@ -579,7 +699,10 @@
 					"name": "volume",
 					"type": "text"
 				},
-				"view": "Volume"
+				"view": {
+					"name": "Volume",
+					"type": "text"
+				}
 			},
 			{
 				"array": {
@@ -590,7 +713,10 @@
 					"name": "lokasi",
 					"type": "text"
 				},
-				"view": "Lokasi"
+				"view": {
+					"name": "Lokasi",
+					"type": "address"
+				}
 			},
 			{
 				"array": {
@@ -601,7 +727,10 @@
 					"name": "deskripsi",
 					"type": "text"
 				},
-				"view": "Deskripsi"
+				"view": {
+					"name": "Deskripsi",
+					"type": "text"
+				}
 			},
 			{
 				"array": {
@@ -612,7 +741,10 @@
 					"name": "sumber_dana",
 					"type": ["text"]
 				},
-				"view": "Sumber Dana"
+				"view": {
+					"name": "Sumber Dana",
+					"type": ["text"]
+				}
 			},
 			{
 				"array": {
@@ -623,7 +755,10 @@
 					"name": "pagu",
 					"type": ["bigint"]
 				},
-				"view": "Pagu"
+				"view": {
+					"name": "Pagu",
+					"type": ["integer"]
+				}
 			},
 			{
 				"array": {
@@ -634,20 +769,22 @@
 				"column": {
 					"name": "sumber_dana_dump",
 					"type": ["json"]
-				},
-				"view": "Sumber Dana [dump]"
+				}
 			},
 			{
 				"array": {
 					"path": ["SUMBER DANA", "Pagu"],
-					"preprocess": null,
+					"process": null,
 					"type": "integer"
 				},
 				"column": {
 					"name": "total_pagu",
 					"type": "bigint"
 				},
-				"view": "Total Pagu"
+				"view": {
+					"name": "Total Pagu",
+					"type": "integer"
+				}
 			},
 			{
 				"array": {
@@ -659,7 +796,10 @@
 					"name": "pelaksanaan_awal",
 					"type": "date"
 				},
-				"view": "Awal Pelaksanaan"
+				"view": {
+					"name": "Awal Pelaksanaan",
+					"type": "time_resolution_month"
+				}
 			},
 			{
 				"array": {
@@ -671,7 +811,10 @@
 					"name": "pelaksanaan_akhir",
 					"type": "date"
 				},
-				"view": "Akhir Pelaksanaan"
+				"view": {
+					"name": "Akhir Pelaksanaan",
+					"type": "time_resolution_month"
+				}
 			}
 		]
 	},
@@ -702,7 +845,10 @@
 					"name": "id",
 					"type": "integer"
 				},
-				"view": "Kode Perusahaan"
+				"view": {
+					"name": "Kode Perusahaan",
+					"type": "integer"
+				}
 			},
 			{
 				"array": {
@@ -713,7 +859,10 @@
 					"name": "nama_perusahaan",
 					"type": "text"
 				},
-				"view": "Nama Perusahaan"
+				"view": {
+					"name": "Nama Perusahaan",
+					"type": "text"
+				}
 			},
 			{
 				"array": {
@@ -724,7 +873,10 @@
 					"name": "jenis_usaha",
 					"type": "text"
 				},
-				"view": "Jenis Badan Usaha"
+				"view": {
+					"name": "Jenis Badan Usaha",
+					"type": "text"
+				}
 			},
 			{
 				"array": {
@@ -735,7 +887,10 @@
 					"name": "akte",
 					"type": "integer"
 				},
-				"view": "Nomor Akte"
+				"view": {
+					"name": "Nomor Akte",
+					"type": "integer"
+				}
 			},
 			{
 				"array": {
@@ -747,7 +902,10 @@
 					"name": "tanggal",
 					"type": "date"
 				},
-				"view": "Tanggal Akte"
+				"view": {
+					"name": "Tanggal Akte",
+					"type": "time_resolution_day"
+				}
 			}
 		]
 	},
@@ -778,7 +936,10 @@
 					"name": "id",
 					"type": "integer"
 				},
-				"view": "Kode Perusahaan"
+				"view": {
+					"name": "Kode Perusahaan",
+					"type": "integer"
+				}
 			},
 			{
 				"array": {
@@ -789,7 +950,10 @@
 					"name": "jenis_saham",
 					"type": "text"
 				},
-				"view": "Jenis Saham"
+				"view": {
+					"name": "Jenis Saham",
+					"type": "text"
+				}
 			},
 			{
 				"array": {
@@ -800,7 +964,10 @@
 					"name": "pemegang_saham",
 					"type": "text"
 				},
-				"view": "Pemegang Saham"
+				"view": {
+					"name": "Pemegang Saham",
+					"type": "text"
+				}
 			},
 			{
 				"array": {
@@ -811,7 +978,10 @@
 					"name": "negara",
 					"type": "text"
 				},
-				"view": "Asal Negara"
+				"view": {
+					"name": "Asal Negara",
+					"type": "country"
+				}
 			},
 			{
 				"array": {
@@ -820,9 +990,12 @@
 				},
 				"column": {
 					"name": "persentase",
-					"type": "double"
+					"type": "double precision"
 				},
-				"view": "Persentase (%)"
+				"view": {
+					"name": "Persentase (%)",
+					"type": "double"
+				}
 			},
 			{
 				"array": {
@@ -833,7 +1006,10 @@
 					"name": "keterangan",
 					"type": "text"
 				},
-				"view": "Keterangan"
+				"view": {
+					"name": "Keterangan",
+					"type": "text"
+				}
 			}
 		]
 	},
@@ -864,7 +1040,10 @@
 					"name": "id",
 					"type": "integer"
 				},
-				"view": "Kode Perusahaan"
+				"view": {
+					"name": "Kode Perusahaan",
+					"type": "integer"
+				}
 			},
 			{
 				"array": {
@@ -875,7 +1054,10 @@
 					"name": "nomor_npwp",
 					"type": "text"
 				},
-				"view": "Nomor NPWP"
+				"view": {
+					"name": "Nomor NPWP",
+					"type": "text"
+				}
 			},
 			{
 				"array": {
@@ -886,7 +1068,10 @@
 					"name": "nama_npwp",
 					"type": "text"
 				},
-				"view": "Nama NPWP"
+				"view": {
+					"name": "Nama NPWP",
+					"type": "human_name"
+				}
 			},
 			{
 				"array": {
@@ -897,7 +1082,10 @@
 					"name": "alamat_npwp",
 					"type": "text"
 				},
-				"view": "Alamat NPWP"
+				"view": {
+					"name": "Alamat NPWP",
+					"type": "address"
+				}
 			},
 			{
 				"array": {
@@ -908,7 +1096,10 @@
 					"name": "dokumen_npwp",
 					"type": "text"
 				},
-				"view": "Dokumen NPWP"
+				"view": {
+					"name": "Dokumen NPWP",
+					"type": "text"
+				}
 			},
 			{
 				"array": {
@@ -919,7 +1110,10 @@
 					"name": "keterangan",
 					"type": "text"
 				},
-				"view": "Keterangan"
+				"view": {
+					"name": "Keterangan",
+					"type": "text"
+				}
 			}
 		]
 	},
@@ -950,7 +1144,10 @@
 					"name": "id",
 					"type": "integer"
 				},
-				"view": "Kode Perusahaan"
+				"view": {
+					"name": "Kode Perusahaan",
+					"type": "integer"
+				}
 			},
 			{
 				"array": {
@@ -961,7 +1158,10 @@
 					"name": "peruntukan",
 					"type": "text"
 				},
-				"view": "Peruntukan Alamat"
+				"view": {
+					"name": "Peruntukan Alamat",
+					"type": "text"
+				}
 			},
 			{
 				"array": {
@@ -972,7 +1172,10 @@
 					"name": "alamat",
 					"type": "text"
 				},
-				"view": "Alamat"
+				"view": {
+					"name": "Alamat",
+					"type": "address"
+				}
 			},
 			{
 				"array": {
@@ -983,7 +1186,10 @@
 					"name": "keterangan",
 					"type": "text"
 				},
-				"view": "Keterangan"
+				"view": {
+					"name": "Keterangan",
+					"type": "text"
+				}
 			},
 			{
 				"array": {
@@ -995,7 +1201,10 @@
 					"name": "update",
 					"type": "timestamp"
 				},
-				"view": "Tanggal update terakhir"
+				"view": {
+					"name": "Tanggal update terakhir",
+					"type": "time_resolution_microsecond"
+				}
 			},
 			{
 				"array": {
@@ -1009,7 +1218,10 @@
 					"name": "revisi",
 					"type": "integer"
 				},
-				"view": "revisi"
+				"view": {
+					"name": "revisi",
+					"type": "integer"
+				}
 			}
 		]
 	},
@@ -1040,7 +1252,10 @@
 					"name": "id",
 					"type": "integer"
 				},
-				"view": "Kode Perusahaan"
+				"view": {
+					"name": "Kode Perusahaan",
+					"type": "integer"
+				}
 			},
 			{
 				"array": {
@@ -1051,7 +1266,10 @@
 					"name": "nama",
 					"type": "text"
 				},
-				"view": "Nama"
+				"view": {
+					"name": "Nama",
+					"type": "human_name"
+				}
 			},
 			{
 				"array": {
@@ -1062,7 +1280,10 @@
 					"name": "jabatan",
 					"type": "text"
 				},
-				"view": "Jabatan"
+				"view": {
+					"name": "Jabatan",
+					"type": "text"
+				}
 			},
 			{
 				"array": {
@@ -1074,7 +1295,10 @@
 					"name": "periode_awal",
 					"type": "date"
 				},
-				"view": "Awal Periode"
+				"view": {
+					"name": "Awal Periode",
+					"type": "time_resolution_day"
+				}
 			},
 			{
 				"array": {
@@ -1086,7 +1310,10 @@
 					"name": "periode_akhir",
 					"type": "date"
 				},
-				"view": "Akhir Periode"
+				"view": {
+					"name": "Akhir Periode",
+					"type": "time_resolution_day"
+				}
 			},
 			{
 				"array": {
@@ -1099,7 +1326,10 @@
 					"name": "update",
 					"type": "timestamp"
 				},
-				"view": "Tanggal update terakhir"
+				"view": {
+					"name": "Tanggal update terakhir",
+					"type": "time_resolution_microsecond"
+				}
 			},
 			{
 				"array": {
@@ -1113,7 +1343,10 @@
 					"name": "revisi",
 					"type": "integer"
 				},
-				"view": "revisi"
+				"view": {
+					"name": "revisi",
+					"type": "integer"
+				}
 			}
 		]
 	},
@@ -1144,7 +1377,10 @@
 					"name": "id",
 					"type": "integer"
 				},
-				"view": "Kode Perusahaan"
+				"view": {
+					"name": "Kode Perusahaan",
+					"type": "integer"
+				}
 			},
 			{
 				"array": {
@@ -1155,7 +1391,10 @@
 					"name": "jenis_perizinan",
 					"type": "text"
 				},
-				"view": "Jenis Perizinan"
+				"view": {
+					"name": "Jenis Perizinan",
+					"type": "text"
+				}
 			},
 			{
 				"array": {
@@ -1166,7 +1405,10 @@
 					"name": "nomor_perizinan",
 					"type": "text"
 				},
-				"view": "Nomor Perizinan"
+				"view": {
+					"name": "Nomor Perizinan",
+					"type": "text"
+				}
 			},
 			{
 				"array": {
@@ -1177,7 +1419,10 @@
 					"name": "tahapan_kegiatan",
 					"type": "text"
 				},
-				"view": "Tahapan Kegiatan"
+				"view": {
+					"name": "Tahapan Kegiatan",
+					"type": "text"
+				}
 			},
 			{
 				"array": {
@@ -1188,7 +1433,10 @@
 					"name": "wiup",
 					"type": "text"
 				},
-				"view": "Kode WIUP"
+				"view": {
+					"name": "Kode WIUP",
+					"type": "text"
+				}
 			},
 			{
 				"array": {
@@ -1199,7 +1447,10 @@
 					"name": "komoditas",
 					"type": "text"
 				},
-				"view": "Komoditas"
+				"view": {
+					"name": "Komoditas",
+					"type": "text"
+				}
 			},
 			{
 				"array": {
@@ -1208,9 +1459,12 @@
 				},
 				"column": {
 					"name": "luas",
-					"type": "double"
+					"type": "double precision"
 				},
-				"view": "Luas (ha)"
+				"view": {
+					"name": "Luas (ha)",
+					"type": "double"
+				}
 			},
 			{
 				"array": {
@@ -1222,7 +1476,10 @@
 					"name": "berkalu_awal",
 					"type": "date"
 				},
-				"view": "Awal Berlaku"
+				"view": {
+					"name": "Awal Berlaku",
+					"type": "time_resolution_day"
+				}
 			},
 			{
 				"array": {
@@ -1234,7 +1491,10 @@
 					"name": "berlaku_akhir",
 					"type": "date"
 				},
-				"view": "Akhir Berlaku"
+				"view": {
+					"name": "Akhir Berlaku",
+					"type": "time_resolution_day"
+				}
 			},
 			{
 				"array": {
@@ -1245,7 +1505,10 @@
 					"name": "tahapan_cnc",
 					"type": "text"
 				},
-				"view": "Tahapan CNC"
+				"view": {
+					"name": "Tahapan CNC",
+					"type": "text"
+				}
 			},
 			{
 				"array": {
@@ -1256,7 +1519,10 @@
 					"name": "lokasi",
 					"type": "text"
 				},
-				"view": "Lokasi"
+				"view": {
+					"name": "Lokasi",
+					"type": "address"
+				}
 			}
 		]
 	}
