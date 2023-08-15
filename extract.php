@@ -48,7 +48,7 @@ function main() {
 			continue;
 		}
 		$res = $res[0];
-		$raw_id = $res['auto_id'];
+		$raw_id = (int) $res['auto_id'];
 		$vals = maps\extract($get($res['content']), $conf,
 			fn($t) => null,
 			fn($t) =>

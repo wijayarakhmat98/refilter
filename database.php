@@ -57,20 +57,25 @@ class db_insert {
 	}
 
 	public function query($signature) {
+		$param_pad = 0;
 		$query = 'insert into '.$this->table.'(';
-		foreach ($this->params as $pos => $param)
+		foreach ($this->params as $pos => $param) {
 			$query .= $param.(($pos < count($this->params) - 1) ? ', ' : '');
-		$query = $query.') values(';
+			if (strlen($param) > $param_pad)
+				$param_pad = strlen($param);
+		}
+		$query = $query.")\nvalues(\n";
 		$arg = new class() { public $pos = 1; };
 		$sig = [null, ...explode(';', $signature)];
 		foreach ($this->params as $pos => $param) {
+			$query .= "\t/* ".sprintf('%-'.$param_pad.'s', $param).' */ ';
 			if (in_array($pos, $this->array_pos))
 				$query .= preg_replace_callback('/%/', fn() => '$'.$arg->pos++, next($sig));
 			else
 				$query .= '$'.$arg->pos++;
-			$query .= ($pos < count($this->params) - 1) ? ', ' : '';
+			$query .= ($pos < count($this->params) - 1) ? ",\n" : '';
 		}
-		$query .= ')';
+		$query .= "\n)";
 		return $query;
 	}
 

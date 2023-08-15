@@ -41,6 +41,9 @@ function better_dump($obj) {
 	echo $dump;
 }
 
+require_once('maps.php');
+require_once('database.php');
+
 $jump = [1, 2, 4, 8, 16];
 
 $data = $_GET;
@@ -75,8 +78,56 @@ if (!isset($data['id']) || strlen($data['id']) == 0)
 else
 	$data['id'] = (int) $data['id'];
 
-if (!isset($data['extract']) || strlen($data['extract']) == 0)
-	$data['extract'] = null;
+if (!isset($data['factory']) || strlen($data['factory']) == 0)
+	switch ([$data['website'], $data['type']]) {
+	case ['sirup', 'satuan']:
+		$data['factory'] = 'sirup_satuan';
+		break;
+	case ['sirup', 'penyedia']:
+		$data['factory'] = 'sirup_penyedia';
+		break;
+	case ['sirup', 'swakelola']:
+		$data['factory'] = 'sirup_swakelola';
+		break;
+	case ['modi', null]:
+		$data['factory'] = 'modi';
+		break;
+	default:
+		$data['factory'] = null;
+		break;
+	}
+
+if (!isset($data['table']) || strlen($data['table']) == 0)
+	switch ([$data['website'], $data['type']]) {
+	case ['sirup', 'satuan']:
+		$data['table'] = 'sirup_satuan';
+		break;
+	case ['sirup', 'penyedia']:
+		$data['table'] = 'sirup_penyedia';
+		break;
+	case ['sirup', 'swakelola']:
+		$data['table'] = 'sirup_swakelola';
+		break;
+	case ['modi', null]:
+		$data['table'] = 'modi_profil';
+		break;
+	default:
+		$data['table'] = null;
+		break;
+	}
+
+$conf = null;
+
+if ($data['factory'] && $data['table'])
+	foreach (json_decode(file_get_contents('maps.json'), true) as $c)
+		if (
+			$c['source']['website'] == $data['website'] &&
+			$c['source']['type'] == $data['type'] &&
+			$c['table'] == $data['table']
+		) {
+			$conf = $c;
+			break;
+		}
 
 switch ([$data['website'], $data['type']]) {
 case ['sirup', 'satuan']:
@@ -122,16 +173,23 @@ else {
 	if (count($res) == 0)
 		$res = null;
 	else
-		$res = $res[0]['content'];
+		$res = $res[0];
 }
 
-$content = $res;
-$clean = $res;
-$doc = new DOMDocument('1.0', 'utf-8');
-if ($content)
-	@$doc->loadHTML($content);
+if ($res) {
+	$raw_id = (int) $res['auto_id'];
+	$web_id = $data['id'];
+	$content = $res['content'];
+}
+else {
+	$raw_id = null;
+	$web_id = null;
+	$content = null;
+}
 
-if ($res != null)
+$clean = $content;
+
+if ($clean)
 	switch([$data['website'], $data['type']]) {
 	case ['modi', null]:
 		$clean = preg_replace('/<script.*?\/script>/s', '', $clean);
@@ -141,14 +199,43 @@ if ($res != null)
 		break;
 	}
 
-$extract_factory = sprintf('extract/%s.php', $data['extract']);
-if ($content !== null && file_exists($extract_factory)) {
-	require_once($extract_factory);
-	$get = sprintf('%s\get', $data['extract']);
-	$extract = @$get($content);
+$doc = new DOMDocument('1.0', 'utf-8');
+if ($content)
+	@$doc->loadHTML($content);
+
+if ($content && $data['factory']) {
+	require_once('extract/'.$data['factory'].'.php');
+	$extract = @($data['factory'].'\get')($content);
 }
-else
+else {
 	$extract = null;
+}
+
+if ($extract && $conf) {
+	$maps = maps\extract($extract, $conf,
+		fn($t) => null,
+		fn($t) =>
+			$t == 'raw_id' ? fn($v) => $raw_id : (
+			$t == 'web_id' ? fn($v) => $web_id : (
+			null
+		))
+	);
+	list($column_name, $column_type) = maps\column($conf);
+	$insert = new db_insert($dbconn, $conf['table'], $column_name, $column_type);
+	$insert_signature = $insert->signature($maps);
+	$insert_query = $insert->query($insert_signature);
+	$insert_flat = $insert->flatten($maps);
+	array_unshift($insert_flat, 'dummy');
+	unset($insert_flat[0]);
+}
+else {
+	$maps = null;
+	$column_name = null;
+	$column_type = null;
+	$insert_signature = null;
+	$insert_query = null;
+	$insert_flat = null;
+}
 
 $stmt2 = bin2hex(random_bytes(16));
 pg_prepare($dbconn, $stmt2, '
@@ -210,7 +297,8 @@ for ($i = count($jump) - 1; $i >= 0; --$i)
 					<input type="hidden" name="website" value="%s" />
 					<input type="hidden" name="type" value="%s" />
 					<input type="hidden" name="id" value="%s" />
-					<input type="hidden" name="extract" value="%s" />
+					<input type="hidden" name="factory" value="%s" />
+					<input type="hidden" name="table" value="%s" />
 					<button type="submit">%s</button>
 				</form>
 			</div>
@@ -219,19 +307,73 @@ for ($i = count($jump) - 1; $i >= 0; --$i)
 		$data['website'],
 		$data['type'],
 		$data['id'] - $jump[$i],
-		$data['extract'],
+		$data['factory'],
+		$data['table'],
 		$data['id'] - $jump[$i]
 	);
 ?>
-			<div style="flex: 1; text-align: center;">
-				<form id="form" action="<?php echo htmlspecialchars($_SERVER['PHP_SELF']); ?>" method="GET" style="display: inline-block; margin: 0;">
-					<label for="website">Website:</label>
-					<input type="text" name="website" value="<?php echo $data['website']; ?>" />
-					<label for="type">Type:</label>
-					<input type="text" name="type" value="<?php echo $data['type']; ?>" />
-					<label for="id">ID:</label>
-					<input type="number" name="id" value="<?php echo $data['id']; ?>" />
-					<button type="submit">Go</button>
+			<div style="flex: 1;">
+				<form id="form" action="<?php echo htmlspecialchars($_SERVER['PHP_SELF']); ?>" method="GET" style="display: inline-block; margin: 0; padding: 0 0.1rem; box-sizing: border-box; width: 100%;">
+					<div style="display: flex;">
+						<div style="flex: 1;">
+						</div>
+						<div style="flex: 0 1 auto; margin: 0 0.1rem;">
+							<div style="display: flex;">
+								<div style="flex: 0; margin: 0 0.1rem;">
+									<label for="website">Website:</label>
+								</div>
+								<div style="flex: 1; margin: 0 0.1rem;">
+									<input type="text" name="website" value="<?php echo $data['website']; ?>" style="width: 100%;" />
+								</div>
+							</div>
+						</div>
+						<div style="flex: 0 1 auto; margin: 0 0.1rem;">
+							<div style="display: flex;">
+								<div style="flex: 0; margin: 0 0.1rem;">
+									<label for="type">Type:</label>
+								</div>
+								<div style="flex: 1; margin: 0 0.1rem;">
+									<input type="text" name="type" value="<?php echo $data['type']; ?>" style="width: 100%;" />
+								</div>
+							</div>
+						</div>
+						<div style="flex: 0 1 auto; margin: 0 0.1rem;">
+							<div style="display: flex;">
+								<div style="flex: 0; margin: 0 0.1rem;">
+									<label for="id">ID:</label>
+								</div>
+								<div style="flex: 1; margin: 0 0.1rem;">
+									<input type="text" name="id" value="<?php echo $data['id']; ?>" style="width: 100%;" />
+								</div>
+							</div>
+						</div>
+						<div style="flex: 0 1 auto; margin: 0 0.1rem;">
+							<div style="display: flex;">
+								<div style="flex: 0; margin: 0 0.1rem;">
+									<label for="factory">Factory:</label>
+								</div>
+								<div style="flex: 1; margin: 0 0.1rem;">
+									<input type="text" name="factory" value="<?php echo $data['factory']; ?>" style="width: 100%;" />
+								</div>
+							</div>
+						</div>
+						<div style="flex: 0 1 auto; margin: 0 0.1rem;">
+							<div style="display: flex;">
+								<div style="flex: 0; margin: 0 0.1rem;">
+									<label for="table">Table:</label>
+								</div>
+								<div style="flex: 1; margin: 0 0.1rem;">
+									<input type="text" name="table" value="<?php echo $data['table']; ?>" style="width: 100%;" />
+								</div>
+							</div>
+						</div>
+						<div style="flex: 0 1 auto; margin: 0 0.1rem;">
+							<button type="submit">Go</button>
+						</div>
+						<div style="flex: 1;">
+						</div>
+					</div>
+
 				</form>
 			</div>
 <?php
@@ -242,7 +384,8 @@ for ($i = 0; $i < count($jump); ++$i)
 					<input type="hidden" name="website" value="%s" />
 					<input type="hidden" name="type" value="%s" />
 					<input type="hidden" name="id" value="%s" />
-					<input type="hidden" name="extract" value="%s" />
+					<input type="hidden" name="factory" value="%s" />
+					<input type="hidden" name="table" value="%s" />
 					<button type="submit">%s</button>
 				</form>
 			</div>
@@ -251,7 +394,8 @@ for ($i = 0; $i < count($jump); ++$i)
 		$data['website'],
 		$data['type'],
 		$data['id'] + $jump[$i],
-		$data['extract'],
+		$data['factory'],
+		$data['table'],
 		$data['id'] + $jump[$i]
 	);
 ?>
@@ -300,21 +444,11 @@ for ($i = 0; $i < count($jump); ++$i)
 					<div style="height: 100%; display: flex; flex-direction: column;">
 						<div style="flex: 0;">
 							<div style="height: 100%; margin: 0 0 1rem 0;">
-								<div style="display: flex;">
-									<div style="flex: 0;">
-										<button style="margin: 0 0.1rem;" onclick="javascript:change_tab('tab_1');">Source</button>
-									</div>
-									<div style="flex: 0;">
-										<button style="margin: 0 0.1rem;" onclick="javascript:change_tab('tab_2');">Tree</button>
-									</div>
-									<div style="flex: 0;">
-										<button style="margin: 0 0.1rem;" onclick="javascript:change_tab('tab_3');">Extract</button>
-									</div>
-									<div style="flex: 1; text-align: right;">
-										<label for="extract">Extract:</label>
-										<input form="form" type="text" name="extract" value="<?php echo $data['extract']; ?>" />
-									</div>
-								</div>
+								<button style="margin: 0 0.1rem;" onclick="javascript:change_tab('tab_1');">Source</button>
+								<button style="margin: 0 0.1rem;" onclick="javascript:change_tab('tab_2');">Tree</button>
+								<button style="margin: 0 0.1rem;" onclick="javascript:change_tab('tab_3');">Extract</button>
+								<button style="margin: 0 0.1rem;" onclick="javascript:change_tab('tab_4');">Maps</button>
+								<button style="margin: 0 0.1rem;" onclick="javascript:change_tab('tab_5');">Insert</button>
 							</div>
 						</div>
 						<div style="flex: 1; overflow: auto;">
@@ -326,7 +460,29 @@ for ($i = 0; $i < count($jump); ++$i)
 									<div style="white-space: pre; font-family: Consolas;"><?php traverse($doc); ?></div>
 								</div>
 								<div id="tab_3" class="scroll" style="width: 100%; height: 100%; overflow: auto; display: none;">
-									<div style="white-space: pre; font-family: Consolas;"><?php better_dump($extract); ?></div>
+									<div style="white-space: pre; font-family: Consolas;"><?php
+										if ($extract)
+											better_dump($extract);
+									?></div>
+								</div>
+								<div id="tab_4" class="scroll" style="width: 100%; height: 100%; overflow: auto; display: none;">
+									<div style="white-space: pre; font-family: Consolas;"><?php
+										if ($maps)
+											better_dump(array_combine($column_name, $maps));
+									?></div>
+								</div>
+								<div id="tab_5" class="scroll" style="width: 100%; height: 100%; overflow: auto; display: none;">
+									<div style="white-space: pre; font-family: Consolas;"><?php
+										if ($insert_flat) {
+											echo "signature\n";
+											foreach (explode(';', $insert_signature) as $sig)
+												echo "\t", $sig, "\n";
+											echo "\n";
+											better_dump($insert_flat);
+											echo "\n";
+											echo $insert_query;
+										}
+									?></div>
 								</div>
 							</div>
 						</div>
