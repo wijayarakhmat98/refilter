@@ -55,7 +55,8 @@ function main() {
 				$t == 'raw_id' ? fn($v) => $raw_id : (
 				$t == 'web_id' ? fn($v) => $web_id : (
 				null
-			))
+			)),
+			fn($t) => null
 		);
 		if (!$insert(...$vals)) {
 			echo "FAIL\n";

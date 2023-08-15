@@ -4,7 +4,7 @@ namespace sirup_penyedia;
 
 use \DOMDocument, \DOMXpath;
 
-function parse_uraian_spesifikasi($text) {
+function clean_uraian_spesifikasi($text) {
 	$text = normalize_whitespace($text);
 	$_text = strtolower($text);
 	switch ($_text) {
@@ -47,7 +47,7 @@ function parse_uraian_spesifikasi($text) {
 	return $text;
 }
 
-function parse_pemilihan($pemilihan) {
+function clean_pemilihan($pemilihan) {
 	$pemilihan = normalize_whitespace($pemilihan);
 	$_pemilihan = strtolower($pemilihan);
 	return ($_pemilihan == "belum ditentukan") ? null : $pemilihan;

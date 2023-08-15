@@ -51,7 +51,7 @@
 			{
 				"array": {
 					"path": ["Nama PA/KPA"],
-					"preprocess": "parse_nama",
+					"postprocess": "clean_nama",
 					"type": "string"
 				},
 				"column": {
@@ -63,7 +63,7 @@
 			{
 				"array": {
 					"path": ["Alamat"],
-					"preprocess": "parse_alamat",
+					"postprocess": "clean_alamat",
 					"type": "string"
 				},
 				"column": {
@@ -184,7 +184,7 @@
 			{
 				"array": {
 					"path": ["Uraian Pekerjaan"],
-					"preprocess": "parse_uraian_spesifikasi",
+					"postprocess": "clean_uraian_spesifikasi",
 					"type": "string"
 				},
 				"column": {
@@ -196,7 +196,7 @@
 			{
 				"array": {
 					"path": ["Spesifikasi Pekerjaan"],
-					"preprocess": "parse_uraian_spesifikasi",
+					"postprocess": "clean_uraian_spesifikasi",
 					"type": "string"
 				},
 				"column": {
@@ -347,7 +347,7 @@
 			{
 				"array": {
 					"path": ["Metode Pemilihan"],
-					"preprocess": "parse_pemilihan",
+					"postprocess": "clean_pemilihan",
 					"type": "string"
 				},
 				"column": {

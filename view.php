@@ -218,7 +218,8 @@ if ($extract && $conf) {
 			$t == 'raw_id' ? fn($v) => $raw_id : (
 			$t == 'web_id' ? fn($v) => $web_id : (
 			null
-		))
+		)),
+		fn($t) => null
 	);
 	list($column_name, $column_type) = maps\column($conf);
 	$insert = new db_insert($dbconn, $conf['table'], $column_name, $column_type);

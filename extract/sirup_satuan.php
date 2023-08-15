@@ -4,7 +4,7 @@ namespace sirup_satuan;
 
 use \DOMDocument, \DOMXpath;
 
-function parse_nama($nama) {
+function clean_nama($nama) {
 	if ($nama === null)
 		return null;
 	$nama = normalize_whitespace($nama);
@@ -25,7 +25,7 @@ function parse_nama($nama) {
 	return $nama;
 }
 
-function parse_alamat($alamat) {
+function clean_alamat($alamat) {
 	if ($alamat === null)
 		return null;
 	$alamat = normalize_whitespace($alamat);

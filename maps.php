@@ -17,7 +17,7 @@ function column($conf) {
 	return [$name, $type];
 }
 
-function extract($array, $conf, $preprocess, $process) {
+function extract($array, $conf, $preprocess, $process, $postprocess) {
 	$ns = $conf['factory'];
 	$vals = [];
 	for ($i = 0; $i < count($conf['maps']); ++$i) {
@@ -37,6 +37,10 @@ function extract($array, $conf, $preprocess, $process) {
 			$val = $f($val);
 		elseif ($val !== null)
 			$val = process($val, $t);
+		if ($f = $a['postprocess'] ?? null)
+			$val = ($ns.'\\'.$f)($val);
+		elseif ($f = $postprocess($t))
+			$val = $f($val);
 		$vals[] = $val;
 	}
 	return $vals;
