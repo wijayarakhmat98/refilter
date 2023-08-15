@@ -11,7 +11,8 @@ function main() {
 
 	// $conf = $conf[0];
 	// $conf = $conf[1];
-	$conf = $conf[3];
+	$conf = $conf[2];
+	// $conf = $conf[3];
 
 	require_once(sprintf('extract/%s.php', $conf['factory']));
 
@@ -25,6 +26,10 @@ function main() {
 		case ['sirup', 'penyedia', 'sirup_penyedia']:
 			$lb = 38401264;
 			$ub = 38401264 + 10000;
+			break;
+		case ['sirup', 'swakelola', 'sirup_swakelola']:
+			$lb = 31800157;
+			$ub = 31800157 + 10000;
 			break;
 		case ['modi', null, 'modi_profil']:
 			$lb = 14357;
@@ -65,7 +70,7 @@ function main() {
 		);
 		if (!$insert(...$vals)) {
 			echo "FAIL\n";
-			better_dump($array);
+			better_dump($vals);
 			continue;
 		}
 		echo "INSERT\n";

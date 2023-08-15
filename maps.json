@@ -654,15 +654,15 @@
 			{
 				"array": {
 					"path": ["Penyelenggara Swakelola"],
-					"type": "string"
+					"type": ["string"]
 				},
 				"column": {
 					"name": "penyelenggara",
-					"type": "text"
+					"type": ["text"]
 				},
 				"view": {
 					"name": "Penyelenggara Swakelola",
-					"type": "text"
+					"type": ["text"]
 				}
 			},
 			{
@@ -682,7 +682,7 @@
 			{
 				"array": {
 					"path": ["Lokasi Pekerjaan"],
-					"preprocess": null,
+					"preprocess": "rotate_table",
 					"type": ["json"]
 				},
 				"column": {
@@ -693,6 +693,7 @@
 			{
 				"array": {
 					"path": ["Volume"],
+					"postprocess": "clean_volume",
 					"type": "string"
 				},
 				"column": {
@@ -763,7 +764,7 @@
 			{
 				"array": {
 					"path": ["SUMBER DANA"],
-					"preprocess": null,
+					"preprocess": "rotate_table",
 					"type": ["json"]
 				},
 				"column": {
@@ -774,7 +775,7 @@
 			{
 				"array": {
 					"path": ["SUMBER DANA", "Pagu"],
-					"process": null,
+					"process": "sum_pagu",
 					"type": "integer"
 				},
 				"column": {
@@ -789,7 +790,7 @@
 			{
 				"array": {
 					"path": ["PELAKSANAAN PEKERJAAN", "Awal"],
-					"preprocess": null,
+					"preprocess": "parse_month",
 					"type": "datetime"
 				},
 				"column": {
@@ -804,7 +805,7 @@
 			{
 				"array": {
 					"path": ["PELAKSANAAN PEKERJAAN", "Akhir"],
-					"preprocess": null,
+					"preprocess": "parse_month",
 					"type": "datetime"
 				},
 				"column": {

@@ -4,6 +4,68 @@ namespace sirup_swakelola;
 
 use \DOMDocument, \DOMXpath;
 
+function clean_volume($volume) {
+	if ($volume === null)
+		return null;
+	$volume = normalize_whitespace($volume);
+	$_volume = strtolower($volume);
+	switch ($_volume) {
+		case '-':
+		case '0':
+		case "'0":
+		case '0.0':
+			return null;
+	}
+	return $volume;
+}
+
+function sum_pagu($pagu) {
+	if (count($pagu) == 0)
+		return null;
+	$sum = 0;
+	foreach ($pagu as $part)
+		$sum += $part;
+	return $sum;
+}
+
+define('MONTH', [
+		'januari' => 1,
+		'februari' => 2,
+		'maret' => 3,
+		'april' => 4,
+		'mei' => 5,
+		'juni' => 6,
+		'juli' => 7,
+		'agustus' => 8,
+		'september' => 9,
+		'oktober' => 10,
+		'november' => 11,
+		'desember' => 12
+]);
+
+function parse_month($date) {
+	$date = normalize_whitespace($date);
+	$date = strtolower($date);
+	if ($date == 'n/a')
+		return null;
+	list($month, $year) = explode(' ', $date);
+	$year = (int) $year;
+	$month = MONTH[$month];
+	return sprintf('%04d-%02d-01 00:00:00.00', $year, $month);
+}
+
+function rotate_table($table_col) {
+	$table_row = array_fill(0, count($table_col[array_keys($table_col)[0]]), []);
+	foreach ($table_col as $column => $rows)
+		foreach ($rows as $row => $val)
+			$table_row[$row][$column] = $val;
+	return $table_row;
+}
+
+function normalize_whitespace($text) {
+	return trim(preg_replace('/\s+/', ' ', $text));
+}
+
 function get($content) {
 	$doc = new DOMDocument('1.0', 'utf-8');
 	$doc->loadHTML($content);
@@ -15,26 +77,43 @@ function get($content) {
 	$array = [];
 	$subtables = [];
 
-	foreach ($xpath->query('./preceding-sibling::dt', $broken) as $key_element) {
-		$key = $xpath->query('.//text()[normalize-space()]', $key_element);
-		$key = trim($key[0]->nodeValue);
-		$array[$key] = null;
+	foreach ($xpath->query('./preceding-sibling::dt|./preceding-sibling::dd', $broken) as $element) {
+		if ($element->nodeName == 'dt') {
+			$key = $xpath->query('.//text()[normalize-space()]', $element);
+			$key = trim($key[0]->nodeValue);
+			$array[$key] = [];
+		}
+		elseif ($element->nodeName == 'dd') {
+			$val = $xpath->query('.//table', $element);
+			if (count($val) == 0)
+				$val = $xpath->query('.//text()[normalize-space()]', $element);
+			$val = $val[0];
+
+			if ($val->nodeType == XML_TEXT_NODE) {
+				$val = trim($val->nodeValue);
+				$val = preg_replace('/^[: ]*/', '', $val);
+				if (strlen($val) == 0)
+					$val = null;
+			}
+			else
+				$subtables[] = $key;
+
+			if ($val !== null)
+				$array[$key][] = $val;
+		}
 	}
 
-	foreach ($xpath->query('./preceding-sibling::dd', $broken) as $i_key => $val_element) {
-		$key = array_keys($array)[$i_key];
-
-		$val = $xpath->query('.//table', $val_element);
-		if (count($val) == 0)
-			$val = $xpath->query('.//text()[normalize-space()]', $val_element);
-		$val = $val[0];
-
-		if ($val->nodeType == XML_TEXT_NODE)
-			$val = substr(trim($val->nodeValue), 2);
-		else
-			$subtables[] = $key;
-
-		$array[$key] = $val;
+	foreach ($array as $key => $val) {
+		switch (true) {
+		case $key == 'Penyelenggara Swakelola':
+			break;
+		case count($val) == 0:
+			$array[$key] = null;
+			break;
+		case (count($val) == 1):
+			$array[$key] = $val[0];
+			break;
+		}
 	}
 
 	foreach ($subtables as $subtable) {
@@ -71,7 +150,8 @@ function get($content) {
 	}
 	foreach ($xpath->query('./following-sibling::dd//text()[normalize-space()]', $broken) as $i_key => $val) {
 		$key = array_keys($subarray)[$i_key];
-		$val = substr(trim($val->nodeValue), 2);
+		$val = trim($val->nodeValue);
+		$val = preg_replace('/^[: ]*/', '', $val);
 		$subarray[$key] = $val;
 	}
 
