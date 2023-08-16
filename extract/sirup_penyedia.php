@@ -133,61 +133,35 @@ function get($content) {
 
 	foreach ($subtables as $subtable) {
 		$subarray = [];
-
-		switch ($subtable) {
-
-			case 'Pengadaan Berkelanjutan atau Sustainable Public Procurement (SPP)':
-
-				foreach ($xpath->query('tr', $array[$subtable]) as $row) {
-					$cells = $xpath->query('td', $row);
-					$key = $xpath->query('.//text()[normalize-space()]', $cells[0]);
-					$key = trim($key[0]->nodeValue);
-					$val = $xpath->query('.//text()[normalize-space()]', $cells[1]);
-					$val = trim($val[0]->nodeValue);
-					$subarray[$key] = $val;
-				}
-
-				break;
-
-			default:
-
-				$rows = [];
-				$keys = [];
-
-				foreach ($xpath->query('tr', $array[$subtable]) as $row)
-					$rows[] = $row;
-				foreach ($xpath->query('.//text()[normalize-space()]', $rows[0]) as $key)
-					$keys[] = trim($key->nodeValue);
-				foreach ($keys as $key)
-					$subarray[$key] = [];
-				array_shift($rows);
-
-				foreach ($rows as $row) {
-					$vals = [];
-					foreach ($xpath->query('.//text()[normalize-space()]', $row) as $val)
-						$vals[] = trim($val->nodeValue);
-					if (count($vals) != count($keys))
-						continue;
-					foreach ($keys as $i => $key)
-						$subarray[$key][] = $vals[$i];
-				}
-
-				switch ($subtable) {
-
-					case 'Pemanfaatan Barang/Jasa':
-					case 'Jadwal Pelaksanaan Kontrak':
-					case 'Jadwal Pemilihan Penyedia':
-
-						foreach ($subarray as $key => $val)
-							$subarray[$key] = $val[0];
-
-						break;
-
-				}
-
-				break;
+		if ($subtable == 'Pengadaan Berkelanjutan atau Sustainable Public Procurement (SPP)')
+			foreach ($xpath->query('tr', $array[$subtable]) as $row) {
+				$cells = $xpath->query('td', $row);
+				$key = $xpath->query('.//text()[normalize-space()]', $cells[0]);
+				$key = trim($key[0]->nodeValue);
+				$val = $xpath->query('.//text()[normalize-space()]', $cells[1]);
+				$val = trim($val[0]->nodeValue);
+				$subarray[$key] = $val;
+			}
+		else {
+			$rows = [];
+			$keys = [];
+			foreach ($xpath->query('tr', $array[$subtable]) as $row)
+				$rows[] = $row;
+			foreach ($xpath->query('.//text()[normalize-space()]', $rows[0]) as $key)
+				$keys[] = trim($key->nodeValue);
+			foreach ($keys as $key)
+				$subarray[$key] = [];
+			array_shift($rows);
+			foreach ($rows as $row) {
+				$vals = [];
+				foreach ($xpath->query('.//text()[normalize-space()]', $row) as $val)
+					$vals[] = trim($val->nodeValue);
+				if (count($vals) != count($keys))
+					continue;
+				foreach ($keys as $i => $key)
+					$subarray[$key][] = $vals[$i];
+			}
 		}
-
 		$array[$subtable] = $subarray;
 	}
 

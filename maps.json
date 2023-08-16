@@ -120,6 +120,7 @@
 			},
 			{
 				"array": {
+					"meta": true,
 					"path": ["Kode RUP"],
 					"type": "integer"
 				},
@@ -431,7 +432,7 @@
 			},
 			{
 				"array": {
-					"path": ["Pemanfaatan Barang/Jasa", "Mulai"],
+					"path": ["Pemanfaatan Barang/Jasa", "Mulai", {}],
 					"preprocess": "parse_month",
 					"type": "datetime"
 				},
@@ -446,7 +447,7 @@
 			},
 			{
 				"array": {
-					"path": ["Pemanfaatan Barang/Jasa", "Akhir"],
+					"path": ["Pemanfaatan Barang/Jasa", "Akhir", {}],
 					"preprocess": "parse_month",
 					"type": "datetime"
 				},
@@ -461,7 +462,7 @@
 			},
 			{
 				"array": {
-					"path": ["Jadwal Pelaksanaan Kontrak", "Mulai"],
+					"path": ["Jadwal Pelaksanaan Kontrak", "Mulai", {}],
 					"preprocess": "parse_month",
 					"type": "datetime"
 				},
@@ -476,7 +477,7 @@
 			},
 			{
 				"array": {
-					"path": ["Jadwal Pelaksanaan Kontrak", "Akhir"],
+					"path": ["Jadwal Pelaksanaan Kontrak", "Akhir", {}],
 					"preprocess": "parse_month",
 					"type": "datetime"
 				},
@@ -491,7 +492,7 @@
 			},
 			{
 				"array": {
-					"path": ["Jadwal Pemilihan Penyedia", "Mulai"],
+					"path": ["Jadwal Pemilihan Penyedia", "Mulai", {}],
 					"preprocess": "parse_month",
 					"type": "datetime"
 				},
@@ -506,7 +507,7 @@
 			},
 			{
 				"array": {
-					"path": ["Jadwal Pemilihan Penyedia", "Akhir"],
+					"path": ["Jadwal Pemilihan Penyedia", "Akhir", {}],
 					"preprocess": "parse_month",
 					"type": "datetime"
 				},
