@@ -13,7 +13,8 @@ function main() {
 	// $conf = $conf[1];
 	// $conf = $conf[2];
 	// $conf = $conf[3];
-	$conf = $conf[5];
+	$conf = $conf[4];
+	// $conf = $conf[5];
 	// $conf = $conf[6];
 	// $conf = $conf[7];
 	// $conf = $conf[8];
@@ -36,6 +37,7 @@ function main() {
 			$ub = 31800157 + 10000;
 			break;
 		case ['modi', null, 'modi_profil']:
+		case ['modi', null, 'modi_saham']:
 		case ['modi', null, 'modi_npwp']:
 		case ['modi', null, 'modi_alamat']:
 		case ['modi', null, 'modi_direksi']:
@@ -55,7 +57,7 @@ function main() {
 	$get = $conf['factory'].'\get';
 
 	for ($web_id = $lb; $web_id < $ub; ++$web_id) {
-		$whoami = sprintf("%s %s %d", $src['website'], $src['type'] ?? 'null', $web_id);
+		$whoami = sprintf("%s %s %s %d", $src['website'], $src['type'] ?? 'null', $conf['table'], $web_id);
 		if ($exists($web_id)) {
 			printf("%s: SKIP\n", $whoami);
 			continue;

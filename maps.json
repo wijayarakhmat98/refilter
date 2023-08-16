@@ -930,6 +930,7 @@
 			},
 			{
 				"array": {
+					"meta": true,
 					"path": ["profile", "1. Profil Perusahaan", "Kode Perusahaan"],
 					"type": "integer"
 				},
@@ -939,6 +940,15 @@
 				},
 				"view": {
 					"name": "Kode Perusahaan",
+					"type": "integer"
+				}
+			},
+			{
+				"array": {
+					"type": "instance_id"
+				},
+				"column": {
+					"name": "instance",
 					"type": "integer"
 				}
 			},
