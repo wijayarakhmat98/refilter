@@ -13,7 +13,8 @@ function main() {
 	// $conf = $conf[1];
 	// $conf = $conf[2];
 	// $conf = $conf[3];
-	$conf = $conf[7];
+	// $conf = $conf[7];
+	$conf = $conf[8];
 
 	require_once(sprintf('extract/%s.php', $conf['factory']));
 
@@ -34,6 +35,7 @@ function main() {
 			break;
 		case ['modi', null, 'modi_profil']:
 		case ['modi', null, 'modi_direksi']:
+		case ['modi', null, 'modi_perizinan']:
 			$lb = 14357;
 			$ub = 14357 + 3000;
 			break;

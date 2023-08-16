@@ -1381,6 +1381,7 @@
 			},
 			{
 				"array": {
+					"meta": true,
 					"path": ["profile", "1. Profil Perusahaan", "Kode Perusahaan"],
 					"type": "integer"
 				},
@@ -1390,6 +1391,15 @@
 				},
 				"view": {
 					"name": "Kode Perusahaan",
+					"type": "integer"
+				}
+			},
+			{
+				"array": {
+					"type": "instance_id"
+				},
+				"column": {
+					"name": "instance",
 					"type": "integer"
 				}
 			},
@@ -1466,6 +1476,7 @@
 			{
 				"array": {
 					"path": ["perizinan", "Luas(ha)", {}],
+					"preprocess": "parse_float",
 					"type": "double"
 				},
 				"column": {
@@ -1480,11 +1491,10 @@
 			{
 				"array": {
 					"path": ["perizinan", "Tgl Mulai Berlaku", {}],
-					"preprocess": null,
 					"type": "datetime"
 				},
 				"column": {
-					"name": "berkalu_awal",
+					"name": "berlaku_awal",
 					"type": "date"
 				},
 				"view": {
@@ -1495,7 +1505,6 @@
 			{
 				"array": {
 					"path": ["perizinan", "Tgl Berakhir", {}],
-					"preprocess": null,
 					"type": "datetime"
 				},
 				"column": {

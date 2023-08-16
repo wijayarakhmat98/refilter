@@ -4,6 +4,12 @@ namespace modi;
 
 use \DOMDocument, \DOMXpath;
 
+function parse_float($float) {
+	$float = normalize_whitespace($float);
+	$float = preg_replace('/,/', '.', $float);
+	return $float;
+}
+
 function parse_periode_awal_direksi($periode) {
 	$periode = normalize_whitespace($periode);
 	$_periode = strtolower($periode);
