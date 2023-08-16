@@ -4,7 +4,7 @@ namespace maps;
 
 use \DateTimeZone, \DateTimeImmutable;
 
-define('UTC', new DateTimeZone('UTC'));
+define(__NAMESPACE__.'\UTC', new DateTimeZone('UTC'));
 
 function column($conf) {
 	$name = [];

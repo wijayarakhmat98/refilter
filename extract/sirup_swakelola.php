@@ -28,7 +28,7 @@ function sum_pagu($pagu) {
 	return $sum;
 }
 
-define('MONTH', [
+define(__NAMESPACE__.'\MONTH', [
 		'januari' => 1,
 		'februari' => 2,
 		'maret' => 3,

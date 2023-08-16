@@ -53,7 +53,7 @@ function clean_pemilihan($pemilihan) {
 	return ($_pemilihan == "belum ditentukan") ? null : $pemilihan;
 }
 
-define('MONTH', [
+define(__NAMESPACE__.'\MONTH', [
 		'januari' => 1,
 		'februari' => 2,
 		'maret' => 3,
