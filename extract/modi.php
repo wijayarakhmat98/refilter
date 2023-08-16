@@ -4,6 +4,15 @@ namespace modi;
 
 use \DOMDocument, \DOMXpath;
 
+function parse_revisi_alamat($revisi) {
+	$revisi = normalize_whitespace($revisi);
+	$_revisi = strtolower($revisi);
+	if ($_revisi == 'alamat awal perusahaan')
+		return 0;
+	else
+		return (int) preg_replace('/perubahan alamat perusahaan ke-/', '', $_revisi);
+}
+
 function parse_float($float) {
 	$float = normalize_whitespace($float);
 	$float = preg_replace('/,/', '.', $float);
@@ -30,7 +39,7 @@ function parse_periode_akhir_direksi($periode) {
 		return $periode_akhir;
 }
 
-function parse_update_direksi($update) {
+function parse_update($update) {
 	$update = normalize_whitespace($update);
 	$_update = strtolower($update);
 	if ($_update == '-')

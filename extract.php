@@ -13,8 +13,9 @@ function main() {
 	// $conf = $conf[1];
 	// $conf = $conf[2];
 	// $conf = $conf[3];
+	$conf = $conf[6];
 	// $conf = $conf[7];
-	$conf = $conf[8];
+	// $conf = $conf[8];
 
 	require_once(sprintf('extract/%s.php', $conf['factory']));
 
@@ -34,6 +35,7 @@ function main() {
 			$ub = 31800157 + 10000;
 			break;
 		case ['modi', null, 'modi_profil']:
+		case ['modi', null, 'modi_alamat']:
 		case ['modi', null, 'modi_direksi']:
 		case ['modi', null, 'modi_perizinan']:
 			$lb = 14357;
@@ -51,13 +53,14 @@ function main() {
 	$get = $conf['factory'].'\get';
 
 	for ($web_id = $lb; $web_id < $ub; ++$web_id) {
+		$whoami = sprintf("%s %s %d", $src['website'], $src['type'] ?? 'null', $web_id);
 		if ($exists($web_id)) {
-			printf("%s %s %d: SKIP\n", $src['website'], $src['type'], $web_id);
+			printf("%s: SKIP\n", $whoami);
 			continue;
 		}
 		$res = pg_fetch_all(pg_execute($dbconn, $stmt, [$src['website'], $src['type'], $web_id]));
 		if (count($res) == 0) {
-			printf("%s %s %d: NOT EXISTS\n", $src['website'], $src['type'], $web_id);
+			printf("%s: NOT EXISTS\n", $whoami);
 			continue;
 		}
 		$res = $res[0];
@@ -80,13 +83,13 @@ function main() {
 		if (count($rows) > 0)
 			foreach ($rows as $i => $vals)
 				if (!$insert(...$vals)) {
-					printf("%s %s %d: FAIL [%d]\n", $src['website'], $src['type'], $web_id, $i);
+					printf("%s: FAIL [%d]\n", $whoami, $i);
 					better_dump($vals);
 				}
 				else
-					printf("%s %s %d: INSERT [%d]\n", $src['website'], $src['type'], $web_id, $i);
+					printf("%s: INSERT [%d]\n", $whoami, $i);
 		else
-			printf("%s %s %d: EMPTY\n", $src['website'], $src['type'], $web_id);
+			printf("%s: EMPTY\n", $whoami);
 	}
 
 	echo '</div>';
