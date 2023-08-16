@@ -13,7 +13,8 @@ function main() {
 	// $conf = $conf[1];
 	// $conf = $conf[2];
 	// $conf = $conf[3];
-	$conf = $conf[6];
+	$conf = $conf[5];
+	// $conf = $conf[6];
 	// $conf = $conf[7];
 	// $conf = $conf[8];
 
@@ -35,6 +36,7 @@ function main() {
 			$ub = 31800157 + 10000;
 			break;
 		case ['modi', null, 'modi_profil']:
+		case ['modi', null, 'modi_npwp']:
 		case ['modi', null, 'modi_alamat']:
 		case ['modi', null, 'modi_direksi']:
 		case ['modi', null, 'modi_perizinan']:
