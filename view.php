@@ -212,22 +212,36 @@ else {
 }
 
 if ($extract && $conf) {
+	$instance_id = 0;
 	$maps = maps\extract($extract, $conf,
 		fn($t) => null,
-		fn($t) =>
-			$t == 'raw_id' ? fn($v) => $raw_id : (
-			$t == 'web_id' ? fn($v) => $web_id : (
-			null
-		)),
+		function ($t) use ($raw_id, $web_id, &$instance_id) {
+			switch ($t) {
+				case 'raw_id': return fn($v) => $raw_id;
+				case 'web_id': return fn($v) => $web_id;
+				case 'instance_id':
+					return function ($v) use (&$instance_id) {
+						return $instance_id++;
+					};
+			};
+		},
 		fn($t) => null
 	);
 	list($column_name, $column_type) = maps\column($conf);
 	$insert = new db_insert($dbconn, $conf['table'], $column_name, $column_type);
-	$insert_signature = $insert->signature($maps);
-	$insert_query = $insert->query($insert_signature);
-	$insert_flat = $insert->flatten($maps);
-	array_unshift($insert_flat, 'dummy');
-	unset($insert_flat[0]);
+	$insert_signature = [];
+	$insert_query = [];
+	$insert_flat = [];
+	foreach ($maps as $map) {
+		$signature = $insert->signature($map);
+		$query = $insert->query($signature);
+		$flat = $insert->flatten($map);
+		array_unshift($flat, 'dummy');
+		unset($flat[0]);
+		$insert_signature[] = $signature;
+		$insert_query[] = $query;
+		$insert_flat[] = $flat;
+	}
 }
 else {
 	$maps = null;
@@ -469,20 +483,24 @@ for ($i = 0; $i < count($jump); ++$i)
 								<div id="tab_4" class="scroll" style="width: 100%; height: 100%; overflow: auto; display: none;">
 									<div style="white-space: pre; font-family: Consolas;"><?php
 										if ($maps)
-											better_dump(array_combine($column_name, $maps));
+											foreach ($maps as $map)
+												better_dump(array_combine($column_name, $map));
 									?></div>
 								</div>
 								<div id="tab_5" class="scroll" style="width: 100%; height: 100%; overflow: auto; display: none;">
 									<div style="white-space: pre; font-family: Consolas;"><?php
-										if ($insert_flat) {
-											echo "signature\n";
-											foreach (explode(';', $insert_signature) as $sig)
-												echo "\t", $sig, "\n";
-											echo "\n";
-											better_dump($insert_flat);
-											echo "\n";
-											echo $insert_query;
-										}
+										if ($insert_flat)
+											for ($i = 0; $i < count($insert_flat); ++$i) {
+												echo "signature\n";
+												if ($insert_signature[$i])
+													foreach (explode(';', $insert_signature[$i]) as $sig)
+														echo "\t", $sig, "\n";
+												echo "\n";
+												better_dump($insert_flat[$i]);
+												echo "\n";
+												echo $insert_query[$i];
+												echo "\n\n";
+											}
 									?></div>
 								</div>
 							</div>

@@ -11,8 +11,9 @@ function main() {
 
 	// $conf = $conf[0];
 	// $conf = $conf[1];
-	$conf = $conf[2];
+	// $conf = $conf[2];
 	// $conf = $conf[3];
+	$conf = $conf[7];
 
 	require_once(sprintf('extract/%s.php', $conf['factory']));
 
@@ -32,6 +33,7 @@ function main() {
 			$ub = 31800157 + 10000;
 			break;
 		case ['modi', null, 'modi_profil']:
+		case ['modi', null, 'modi_direksi']:
 			$lb = 14357;
 			$ub = 14357 + 3000;
 			break;
@@ -47,33 +49,42 @@ function main() {
 	$get = $conf['factory'].'\get';
 
 	for ($web_id = $lb; $web_id < $ub; ++$web_id) {
-		printf("%s %s %d: ", $src['website'], $src['type'], $web_id);
 		if ($exists($web_id)) {
-			echo "SKIP\n";
+			printf("%s %s %d: SKIP\n", $src['website'], $src['type'], $web_id);
 			continue;
 		}
 		$res = pg_fetch_all(pg_execute($dbconn, $stmt, [$src['website'], $src['type'], $web_id]));
 		if (count($res) == 0) {
-			echo "NOT EXISTS\n";
+			printf("%s %s %d: NOT EXISTS\n", $src['website'], $src['type'], $web_id);
 			continue;
 		}
 		$res = $res[0];
 		$raw_id = (int) $res['auto_id'];
-		$vals = maps\extract($get($res['content']), $conf,
+		$instance_id = 0;
+		$rows = maps\extract($get($res['content']), $conf,
 			fn($t) => null,
-			fn($t) =>
-				$t == 'raw_id' ? fn($v) => $raw_id : (
-				$t == 'web_id' ? fn($v) => $web_id : (
-				null
-			)),
+			function ($t) use ($raw_id, $web_id, &$instance_id) {
+				switch ($t) {
+					case 'raw_id': return fn($v) => $raw_id;
+					case 'web_id': return fn($v) => $web_id;
+					case 'instance_id':
+						return function ($v) use (&$instance_id) {
+							return $instance_id++;
+						};
+				};
+			},
 			fn($t) => null
 		);
-		if (!$insert(...$vals)) {
-			echo "FAIL\n";
-			better_dump($vals);
-			continue;
-		}
-		echo "INSERT\n";
+		if (count($rows) > 0)
+			foreach ($rows as $i => $vals)
+				if (!$insert(...$vals)) {
+					printf("%s %s %d: FAIL [%d]\n", $src['website'], $src['type'], $web_id, $i);
+					better_dump($vals);
+				}
+				else
+					printf("%s %s %d: INSERT [%d]\n", $src['website'], $src['type'], $web_id, $i);
+		else
+			printf("%s %s %d: EMPTY\n", $src['website'], $src['type'], $web_id);
 	}
 
 	echo '</div>';

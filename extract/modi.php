@@ -4,6 +4,43 @@ namespace modi;
 
 use \DOMDocument, \DOMXpath;
 
+function parse_periode_awal_direksi($periode) {
+	$periode = normalize_whitespace($periode);
+	$_periode = strtolower($periode);
+	$periode_awal = normalize_whitespace(preg_split('/sampai/', $_periode)[0]);
+	if ($periode_awal == '-')
+		return null;
+	else
+		return $periode_awal;
+}
+
+function parse_periode_akhir_direksi($periode) {
+	$periode = normalize_whitespace($periode);
+	$_periode = strtolower($periode);
+	$periode_akhir = normalize_whitespace(preg_split('/sampai/', $_periode)[1]);
+	if ($periode_akhir == '-')
+		return null;
+	else
+		return $periode_akhir;
+}
+
+function parse_update_direksi($update) {
+	$update = normalize_whitespace($update);
+	$_update = strtolower($update);
+	if ($_update == '-')
+		return null;
+	return $update;
+}
+
+function parse_revisi_direksi($revisi) {
+	$revisi = normalize_whitespace($revisi);
+	$_revisi = strtolower($revisi);
+	if ($_revisi == 'direksi awal perusahaan')
+		return 0;
+	else
+		return (int) preg_replace('/perubahan direksi perusahaan ke-/', '', $_revisi);
+}
+
 function clean_akte($akte) {
 	if ($akte === null)
 		return null;

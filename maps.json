@@ -1246,6 +1246,7 @@
 			},
 			{
 				"array": {
+					"meta": true,
 					"path": ["profile", "1. Profil Perusahaan", "Kode Perusahaan"],
 					"type": "integer"
 				},
@@ -1255,6 +1256,15 @@
 				},
 				"view": {
 					"name": "Kode Perusahaan",
+					"type": "integer"
+				}
+			},
+			{
+				"array": {
+					"type": "instance_id"
+				},
+				"column": {
+					"name": "instance",
 					"type": "integer"
 				}
 			},
@@ -1289,7 +1299,7 @@
 			{
 				"array": {
 					"path": ["direksi", {}, "Periode", {}],
-					"preprocess": null,
+					"preprocess": "parse_periode_awal_direksi",
 					"type": "datetime"
 				},
 				"column": {
@@ -1304,7 +1314,7 @@
 			{
 				"array": {
 					"path": ["direksi", {}, "Periode", {}],
-					"preprocess": null,
+					"preprocess": "parse_periode_akhir_direksi",
 					"type": "datetime"
 				},
 				"column": {
@@ -1320,7 +1330,7 @@
 				"array": {
 					"cursor": ["direksi", {}, "No", {}],
 					"path": ["direksi", {}, "Update terakhir tgl"],
-					"preprocess": null,
+					"preprocess": "parse_update_direksi",
 					"type": "datetime"
 				},
 				"column": {
@@ -1335,9 +1345,9 @@
 			{
 				"array": {
 					"cursor": ["direksi", {}, "No", {}],
-					"path": ["direksi", {}, "Update terakhir tgl"],
+					"path": ["direksi", {}],
 					"get": "key",
-					"preprocess": null,
+					"process": "parse_revisi_direksi",
 					"type": "integer"
 				},
 				"column": {
