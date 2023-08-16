@@ -72,56 +72,47 @@ function get($content) {
 	$xpath = new DOMXpath($doc);
 
 	$list = $xpath->query('//dl')[0];
-	$broken = $xpath->query('dt[h4]', $list)[0];
 
 	$array = [];
 	$subtables = [];
 
-	foreach ($xpath->query('./preceding-sibling::dt|./preceding-sibling::dd', $broken) as $element) {
+	foreach ($xpath->query('./dt|./dd', $list) as $element) {
 		if ($element->nodeName == 'dt') {
 			$key = $xpath->query('.//text()[normalize-space()]', $element);
 			$key = trim($key[0]->nodeValue);
 			$array[$key] = [];
+			$subtable[$key] = [];
 		}
 		elseif ($element->nodeName == 'dd') {
 			$val = $xpath->query('.//table', $element);
 			if (count($val) == 0)
 				$val = $xpath->query('.//text()[normalize-space()]', $element);
-			$val = $val[0];
-
-			if ($val->nodeType == XML_TEXT_NODE) {
-				$val = trim($val->nodeValue);
-				$val = preg_replace('/^[: ]*/', '', $val);
-				if (strlen($val) == 0)
-					$val = null;
-			}
+			if (count($val) > 0)
+				$val = $val[0];
 			else
-				$subtables[] = $key;
+				$val = null;
+
+			if ($val !== null)
+				if ($val->nodeType == XML_TEXT_NODE) {
+					$val = trim($val->nodeValue);
+					$val = preg_replace('/^[: ]*/', '', $val);
+					if (strlen($val) == 0)
+						$val = null;
+				}
+				else
+					$subtables[$key][] = count($array[$key]);
 
 			if ($val !== null)
 				$array[$key][] = $val;
 		}
 	}
 
-	foreach ($array as $key => $val) {
-		switch (true) {
-		case $key == 'Penyelenggara Swakelola':
-			break;
-		case count($val) == 0:
-			$array[$key] = null;
-			break;
-		case (count($val) == 1):
-			$array[$key] = $val[0];
-			break;
-		}
-	}
-
-	foreach ($subtables as $subtable) {
+	foreach ($subtables as $ii => $subtable) foreach ($subtable as $jj) {
 		$rows = [];
 		$keys = [];
 		$subarray = [];
 
-		foreach ($xpath->query('tr', $array[$subtable]) as $row)
+		foreach ($xpath->query('tr', $array[$ii][$jj]) as $row)
 			$rows[] = $row;
 		foreach ($xpath->query('.//text()[normalize-space()]', $rows[0]) as $key)
 			$keys[] = trim($key->nodeValue);
@@ -139,25 +130,8 @@ function get($content) {
 				$subarray[$key][] = $vals[$i];
 		}
 
-		$array[$subtable] = $subarray;
+		$array[$ii][$jj] = $subarray;
 	}
-
-	$subarray = [];
-	foreach ($xpath->query('./following-sibling::dt', $broken) as $key_element) {
-		$key = $xpath->query('.//text()[normalize-space()]', $key_element);
-		$key = trim($key[0]->nodeValue);
-		$subarray[$key] = null;
-	}
-	foreach ($xpath->query('./following-sibling::dd//text()[normalize-space()]', $broken) as $i_key => $val) {
-		$key = array_keys($subarray)[$i_key];
-		$val = trim($val->nodeValue);
-		$val = preg_replace('/^[: ]*/', '', $val);
-		$subarray[$key] = $val;
-	}
-
-	$key = $xpath->query('.//text()[normalize-space()]', $broken);
-	$key = trim($key[0]->nodeValue);
-	$array[$key] = $subarray;
 
 	return $array;
 }

@@ -584,7 +584,8 @@
 			},
 			{
 				"array": {
-					"path": ["Kode RUP"],
+					"meta": true,
+					"path": ["Kode RUP", {}],
 					"type": "integer"
 				},
 				"column": {
@@ -598,7 +599,7 @@
 			},
 			{
 				"array": {
-					"path": ["Nama Paket"],
+					"path": ["Nama Paket", {}],
 					"type": "string"
 				},
 				"column": {
@@ -612,7 +613,7 @@
 			},
 			{
 				"array": {
-					"path": ["KLDI"],
+					"path": ["KLDI", {}],
 					"type": "string"
 				},
 				"column": {
@@ -626,7 +627,7 @@
 			},
 			{
 				"array": {
-					"path": ["Satuan Kerja"],
+					"path": ["Satuan Kerja", {}],
 					"type": "string"
 				},
 				"column": {
@@ -640,7 +641,7 @@
 			},
 			{
 				"array": {
-					"path": ["Tipe Swakelola"],
+					"path": ["Tipe Swakelola", {}],
 					"type": "integer"
 				},
 				"column": {
@@ -668,7 +669,7 @@
 			},
 			{
 				"array": {
-					"path": ["Tahun Anggaran"],
+					"path": ["Tahun Anggaran", {}],
 					"type": "integer"
 				},
 				"column": {
@@ -682,7 +683,7 @@
 			},
 			{
 				"array": {
-					"path": ["Lokasi Pekerjaan"],
+					"path": ["Lokasi Pekerjaan", {}],
 					"preprocess": "rotate_table",
 					"type": ["json"]
 				},
@@ -693,7 +694,7 @@
 			},
 			{
 				"array": {
-					"path": ["Volume"],
+					"path": ["Volume", {}],
 					"postprocess": "clean_volume",
 					"type": "string"
 				},
@@ -708,7 +709,7 @@
 			},
 			{
 				"array": {
-					"path": ["Lokasi"],
+					"path": ["Lokasi", {}],
 					"type": "string"
 				},
 				"column": {
@@ -722,7 +723,7 @@
 			},
 			{
 				"array": {
-					"path": ["Deskripsi"],
+					"path": ["Deskripsi", {}],
 					"type": "string"
 				},
 				"column": {
@@ -736,7 +737,7 @@
 			},
 			{
 				"array": {
-					"path": ["SUMBER DANA", "Sumber Dana"],
+					"path": ["SUMBER DANA", {}, "Sumber Dana"],
 					"type": ["string"]
 				},
 				"column": {
@@ -750,7 +751,7 @@
 			},
 			{
 				"array": {
-					"path": ["SUMBER DANA", "Pagu"],
+					"path": ["SUMBER DANA", {}, "Pagu"],
 					"type": ["integer"]
 				},
 				"column": {
@@ -764,7 +765,7 @@
 			},
 			{
 				"array": {
-					"path": ["SUMBER DANA"],
+					"path": ["SUMBER DANA", {}],
 					"preprocess": "rotate_table",
 					"type": ["json"]
 				},
@@ -775,7 +776,7 @@
 			},
 			{
 				"array": {
-					"path": ["SUMBER DANA", "Pagu"],
+					"path": ["SUMBER DANA", {}, "Pagu"],
 					"process": "sum_pagu",
 					"type": "integer"
 				},
@@ -790,7 +791,7 @@
 			},
 			{
 				"array": {
-					"path": ["PELAKSANAAN PEKERJAAN", "Awal"],
+					"path": ["Awal", {}],
 					"preprocess": "parse_month",
 					"type": "datetime"
 				},
@@ -805,7 +806,7 @@
 			},
 			{
 				"array": {
-					"path": ["PELAKSANAAN PEKERJAAN", "Akhir"],
+					"path": ["Akhir", {}],
 					"preprocess": "parse_month",
 					"type": "datetime"
 				},

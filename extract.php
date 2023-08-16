@@ -10,8 +10,8 @@ function main() {
 	$conf = json_decode($conf_src, true);
 
 	// $conf = $conf[0];
-	$conf = $conf[1];
-	// $conf = $conf[2];
+	// $conf = $conf[1];
+	$conf = $conf[2];
 	// $conf = $conf[3];
 	// $conf = $conf[4];
 	// $conf = $conf[5];
