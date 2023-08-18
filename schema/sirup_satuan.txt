@@ -1,0 +1,1 @@
+pg_dump --dbname refilter --username postgres --table sirup_satuan --no-owner --schema-only --no-table-access-method --no-tablespaces
