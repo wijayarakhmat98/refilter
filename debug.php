@@ -9,6 +9,10 @@ function main() {
 	// debug5();
 	// debug6();
 	// debug7();
+	// debug8();
+	// debug9();
+	// debug10();
+	// debug11();
 }
 
 /* Content download */
@@ -99,38 +103,42 @@ function debug5() {
 
 /* PgSql\Result fetch */
 function debug6() {
-	$dbconn = pg_connect('dbname=test user=postgres password=1234');
+	echo '<div style="white-space: pre; font-family: Consolas;">';
+
+	$dbconn = pg_connect('dbname=refilter user=postgres password=1234');
 
 	$stmt = bin2hex(random_bytes(16));
-	$res = pg_prepare($dbconn, $stmt, 'select * from test');
+	$res = pg_prepare($dbconn, $stmt, 'select auto_id, website, type, id from raw where website = $1 and type = $2 and id >= $3 and id <= $4');
 
-	$res = pg_execute($dbconn, $stmt, []);
+	$res = pg_execute($dbconn, $stmt, ['sirup', 'penyedia', 38401264, 38401264 + 10]);
 	echo '<h1>pg_fetch_all($res)</h1>';
 	echo '<p>'; var_dump(pg_fetch_all($res)); echo '</p>';
 
-	$res = pg_execute($dbconn, $stmt, []);
+	$res = pg_execute($dbconn, $stmt, ['sirup', 'penyedia', 38401264, 38401264 + 10]);
 	echo '<h1>pg_fetch_array($res)</h1>';
 	echo '<p>'; var_dump(pg_fetch_array($res)); echo '</p>';
 
-	$res = pg_execute($dbconn, $stmt, []);
+	$res = pg_execute($dbconn, $stmt, ['sirup', 'penyedia', 38401264, 38401264 + 10]);
 	echo '<h1>pg_fetch_row($res)</h1>';
 	echo '<p>'; var_dump(pg_fetch_row($res)); echo '</p>';
 
-	$res = pg_execute($dbconn, $stmt, []);
+	$res = pg_execute($dbconn, $stmt, ['sirup', 'penyedia', 38401264, 38401264 + 10]);
 	echo '<h1>pg_fetch_assoc($res)</h1>';
 	echo '<p>'; var_dump(pg_fetch_assoc($res)); echo '</p>';
 
-	$res = pg_execute($dbconn, $stmt, []);
+	$res = pg_execute($dbconn, $stmt, ['sirup', 'penyedia', 38401264, 38401264 + 10]);
 	echo '<h1>pg_fetch_object($res)</h1>';
 	echo '<p>'; var_dump(pg_fetch_object($res)); echo '</p>';
 
-	$res = pg_execute($dbconn, $stmt, []);
+	$res = pg_execute($dbconn, $stmt, ['sirup', 'penyedia', 38401264, 38401264 + 10]);
 	echo '<h1>pg_fetch_result($res, 1, 0)</h1>';
 	echo '<p>'; var_dump(pg_fetch_result($res, 1, 0)); echo '</p>';
 
-	$res = pg_execute($dbconn, $stmt, []);
+	$res = pg_execute($dbconn, $stmt, ['sirup', 'penyedia', 38401264, 38401264 + 10]);
 	echo '<h1>pg_fetch_all_columns($res, 1)</h1>';
 	echo '<p>'; var_dump(pg_fetch_all_columns($res, 1)); echo '</p>';
+
+	echo '</div>';
 }
 
 /* INI file */
@@ -138,6 +146,144 @@ function debug7() {
 	$ini_array = parse_ini_file('crawl.ini', true, INI_SCANNER_TYPED);
 	echo '<div style="white-space: pre-wrap;">';
 	print_r($ini_array);
+	echo '</div>';
+}
+
+/* Decode Cloudflare obfuscated email */
+function debug8() {
+	function cfDecodeEmail($encodedString){
+		$k = hexdec(substr($encodedString,0,2));
+		for($i=2,$email='';$i<strlen($encodedString)-1;$i+=2){
+			$email.=chr(hexdec(substr($encodedString,$i,2))^$k);
+		}
+		return $email;
+	}
+	echo cfDecodeEmail('fb9e9682bb8b9e959c938e998e959cd5919a8f9e959c8b89948dd59c94d5929f');
+}
+
+/* Traverse DOM */
+function debug9() {
+	function traverse($node, $last = []) {
+		static $whitelist = [XML_HTML_DOCUMENT_NODE, XML_ELEMENT_NODE, XML_TEXT_NODE];
+
+		if (!in_array($node->nodeType, $whitelist))
+			return;
+
+		for ($i = 0; $i < count($last); ++$i)
+			if ($i < count($last) - 1)
+				echo (!$last[$i]) ? '|   ' : '    ';
+			else
+				echo (!$last[$i]) ? '+-- ' : 'L-- ';
+
+		switch ($node->nodeType) {
+			case XML_HTML_DOCUMENT_NODE:
+			case XML_ELEMENT_NODE:
+				echo htmlspecialchars(sprintf("%s\n", $node->nodeName));
+				break;
+
+			case XML_TEXT_NODE:
+				echo htmlspecialchars(sprintf("%s\n", trim($node->nodeValue)));
+				break;
+
+			default:
+				echo "\n";
+				break;
+		}
+
+		$children = [];
+		foreach ($node->childNodes as $child)
+			if (in_array($child->nodeType, $whitelist))
+				if ($child->nodeType == XML_TEXT_NODE) {
+					$text = trim($child->nodeValue);
+					if (strlen($text) > 0)
+						$children[] = $child;
+				}
+				else
+					$children[] = $child;
+
+		foreach ($children as $i => $child)
+			traverse($child, [...$last, !($i < count($children) - 1)]);
+	}
+
+	echo '<div style="white-space: pre; font-family: Consolas;">';
+	pg_prepare(
+		$dbconn = pg_connect('dbname=refilter user=postgres password=1234'),
+		$stmt = bin2hex(random_bytes(16)),
+		'select content from raw where website = $1 and type = $2 and id = $3'
+	);
+	($doc = new DOMDocument('1.0', 'utf-8'))
+		->loadHTML(pg_fetch_all(
+			pg_execute($dbconn, $stmt, ['sirup', 'penyedia', 38401264]))[0]['content']
+		);
+	traverse($doc);
+	echo '</div>';
+}
+
+
+/* XPath */
+function debug10() {
+	function traverse($node, $last = []) {
+		static $whitelist = [XML_HTML_DOCUMENT_NODE, XML_ELEMENT_NODE, XML_TEXT_NODE, XML_ATTRIBUTE_NODE];
+		if (!in_array($node->nodeType, $whitelist))
+			return;
+		for ($i = 0; $i < count($last); ++$i)
+			if ($i < count($last) - 1)
+				echo (!$last[$i]) ? '|   ' : '    ';
+			else
+				if ($node->nodeType == XML_ATTRIBUTE_NODE)
+					echo (!$last[$i]) ? '|:: ' : 'L:: ';
+				else
+					echo (!$last[$i]) ? '+-- ' : 'L-- ';
+		if ($node->nodeType == XML_TEXT_NODE)
+			echo htmlspecialchars(sprintf("%s\n", trim($node->nodeValue)));
+		elseif ($node->nodeType == XML_ATTRIBUTE_NODE)
+			echo htmlspecialchars(sprintf("%s: %s\n", $node->nodeName, $node->nodeValue));
+		else
+			echo htmlspecialchars(sprintf("%s\n", $node->nodeName));
+		if ($node->nodeType != XML_ATTRIBUTE_NODE) {
+			$children = [];
+			if ($node->attributes)
+				foreach ($node->attributes as $attribute)
+					$children[] = $attribute;
+			foreach ($node->childNodes as $child)
+				if (in_array($child->nodeType, $whitelist))
+					if ($child->nodeType != XML_TEXT_NODE || strlen(trim($child->nodeValue)) > 0)
+						$children[] = $child;
+			foreach ($children as $i => $child)
+				traverse($child, [...$last, !($i < count($children) - 1)]);
+		}
+	}
+
+	function has_class($name) {
+		return sprintf('contains(concat(" ", normalize-space(@class), " "), " %s ")', $name);
+	}
+
+	echo '<div style="white-space: pre; font-family: Consolas;">';
+	pg_prepare(
+		$dbconn = pg_connect('dbname=refilter user=postgres password=1234'),
+		$stmt = bin2hex(random_bytes(16)),
+		'select content from raw where website = $1 and type = $2 and id = $3'
+	);
+	($doc = new DOMDocument('1.0', 'utf-8'))
+		->loadHTML(pg_fetch_all(
+			pg_execute($dbconn, $stmt, ['sirup', 'penyedia', 38401264]))[0]['content']
+		);
+	// traverse($doc);
+	$xpath = new DOMXpath($doc);
+	$elements = $xpath->query(sprintf('/html/body/div/div[%s]/table[%s]', '@id="detil"', has_class('table')));
+	foreach ($elements as $element)
+		traverse($element);
+	echo '</div>';
+}
+
+/* JSON */
+function debug11() {
+	$json_str = file_get_contents('maps.json');
+	$json = json_decode($json_str);
+	echo '<div style="white-space: pre; font-family: Consolas;">';
+	echo '<p>', ($json instanceof stdClass) ? 'TRUE': 'FALSE', '</p>';
+	echo '<p>', ($json[0] instanceof stdClass) ? 'TRUE': 'FALSE', '</p>';
+	print_r($json);
 	echo '</div>';
 }
 

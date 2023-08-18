@@ -58,6 +58,8 @@ function dump_linear_bound($urlf, $conf, $holes, $lb, $ub) {
 	ob_flush(); flush();
 }
 
+require_once('database.php');
+
 define('ASCENDING' , true );
 define('DESCENDING', false);
 
@@ -74,20 +76,19 @@ function main() {
 	$password = $ini_array['password'];
 	$table = $ini_array['table'];
 
-	foreach (array_keys($ini_array) as $key)
-		if (!is_array($ini_array[$key]))
+	foreach ($ini_array as $key => $val)
+		if (!is_array($val))
 			unset($ini_array[$key]);
 
 	$dbconn = pg_connect(sprintf('dbname=%s user=%s password=%s', $dbname, $user, $password));
 	$db = [];
-	$db[$table]['exists'] = new db_exists($dbconn, $table, ['website', 'type', 'id']);
+	$db[$table]['exists'] = new db_exists($dbconn, $table, ['website', 'type', 'id'], ['type']);
 	$db[$table]['insert'] = new db_insert($dbconn, $table, ['website', 'type', 'id', 'content']);
 
 	$task = new interleave();
 	$fail = [];
 
-	foreach (array_keys($ini_array) as $urlf) {
-		$conf = $ini_array[$urlf];
+	foreach ($ini_array as $urlf => $conf) {
 		$ma = $conf['margin'];
 		$at = $conf['attempt'];
 		$co = $conf['cooldown'];
@@ -96,7 +97,7 @@ function main() {
 		$rr = $conf['weight_ret'];
 
 		$exists = function ($id) use ($db, $table, $conf) {
-			$db[$table]['exists']($conf['website'], $conf['type'], $id);
+			return $db[$table]['exists']($conf['website'], $conf['type'], $id);
 		};
 
 		$insert = function ($id, $status, $content) use ($db, $table, $conf) {
@@ -124,88 +125,45 @@ function main() {
 	echo '</div>';
 }
 
-class db_exists {
-	public $stmt;
-
-	public function __construct(public $dbconn, $table, $params) {
-		assert(count($params) > 0);
-		$this->stmt = bin2hex(random_bytes(16));
-		$query = 'select ';
-		for ($i = 0; $i < count($params); ++$i)
-			$query = sprintf('%s%s%s', $query, $params[$i], ($i < count($params) - 1) ? ', ' : '');
-		$query = sprintf('%s from %s where ', $query, $table);
-		for ($i = 0; $i < count($params); ++$i)
-			$query = sprintf('%s%s = $%d%s', $query, $params[$i], $i + 1, ($i < count($params) - 1) ? ' and ' : '');
-		pg_prepare($dbconn, $this->stmt, $query);
-	}
-
-	public function __invoke(...$args) {
-		$res = pg_execute($this->dbconn, $this->stmt, $args);
-		return ($res === false) ? null : count(pg_fetch_all($res)) > 0;
-	}
-}
-
-class db_insert {
-	public $stmt;
-
-	public function __construct(public $dbconn, $table, $params) {
-		assert(count($params) > 0);
-		$this->stmt = bin2hex(random_bytes(16));
-		$query = sprintf('insert into %s(', $table);
-		for ($i = 0; $i < count($params); ++$i)
-			$query = sprintf('%s%s%s', $query, $params[$i], ($i < count($params) - 1) ? ', ' : '');
-		$query = sprintf('%s) values(', $query);
-		for ($i = 0; $i < count($params); ++$i)
-			$query = sprintf('%s$%d%s', $query, $i + 1, ($i < count($params) - 1) ? ', ' : '');
-		$query = sprintf('%s)', $query);
-		pg_prepare($dbconn, $this->stmt, $query);
-	}
-
-	public function __invoke(...$args) {
-		return pg_execute($this->dbconn, $this->stmt, $args);
-	}
-}
-
 class interleave {
-	/* rate, task, and active are parallels */
-	public $rate = [];
+	public $group = [];
 	public $task = [];
-	public $active = [];
-
-	public $pc = -1;
-	public $jmp = 0;
+	public $pc = 0;
 
 	public function add($rate, $task) {
-		assert($rate >= 0);
-		if ($rate == 0)
-			return;
-		$this->rate[] = $rate;
-		$this->task[] = $task;
-		$this->active[] = true;
+		$group = bin2hex(random_bytes(16));
+		for ($i = 0; $i < $rate; ++$i) {
+			$this->group[] = $group;
+			$this->task[] = $task;
+		}
 	}
 
-	/* This is invalid until add() is called at least once. */
 	public function work() {
-		assert(count($this->task) > 0);
+		if (count($this->task) == 0)
+			return false;
 
-		if ($this->jmp <= 0) {
-			for ($i = $this->pc + 1; ; ++$i) {
-				if ($i >= count($this->task))
-					$i = 0;
-				if ($this->active[$i])
-					break;
-				if ($i == $this->pc)
-					return false;
-			}
-			$this->pc = $i;
-			$this->jmp = $this->rate[$this->pc];
+		if ($this->task[$this->pc]->work())
+			++$this->pc;
+		else {
+			$group = [];
+			$task = [];
+			$pc = -1;
+			for ($i = 0; $i < count($this->task); ++$i)
+				if ($this->group[$i] == $this->group[$this->pc]) {
+					if ($pc < 0)
+						$pc = $i;
+				}
+				else {
+					$group[] = $this->group[$i];
+					$task[] = $this->task[$i];
+				}
+			$this->group = $group;
+			$this->task = $task;
+			$this->pc = $pc;
 		}
 
-		$this->active[$this->pc] = $this->task[$this->pc]->work();
-		--$this->jmp;
-
-		if (!$this->active[$this->pc])
-			$this->jmp = 0;
+		if ($this->pc >= count($this->task))
+			$this->pc = 0;
 
 		return true;
 	}

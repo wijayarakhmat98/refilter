@@ -1,0 +1,1584 @@
+[
+
+	{
+		"factory": "sirup_satuan",
+		"source": {
+			"website": "sirup",
+			"type": "satuan"
+		},
+		"table": "sirup_satuan",
+		"maps": [
+			{
+				"array": {
+					"type": "raw_id"
+				},
+				"column": {
+					"name": "source",
+					"type": "integer"
+				}
+			},
+			{
+				"array": {
+					"type": "web_id"
+				},
+				"column": {
+					"name": "id",
+					"type": "integer"
+				}
+			},
+			{
+				"array": {
+					"path": ["KLDI"],
+					"type": "string"
+				},
+				"column": {
+					"name": "kldi",
+					"type": "text"
+				},
+				"view": {
+					"name": "KLDI",
+					"type": "text"
+				}
+			},
+			{
+				"array": {
+					"path": ["Satuan Kerja"],
+					"type": "string"
+				},
+				"column": {
+					"name": "satuan",
+					"type": "text"
+				},
+				"view": {
+					"name": "Satuan Kerja",
+					"type": "text"
+				}
+			},
+			{
+				"array": {
+					"path": ["Nama PA/KPA"],
+					"postprocess": "clean_nama",
+					"type": "string"
+				},
+				"column": {
+					"name": "nama",
+					"type": "text"
+				},
+				"view": {
+					"name": "Nama PA/KPA",
+					"type": "human_name"
+				}
+			},
+			{
+				"array": {
+					"path": ["Alamat"],
+					"postprocess": "clean_alamat",
+					"type": "string"
+				},
+				"column": {
+					"name": "alamat",
+					"type": "text"
+				},
+				"view": {
+					"name": "Alamat",
+					"type": "address"
+				}
+			},
+			{
+				"array": {
+					"path": ["Email"],
+					"type": "string"
+				},
+				"column": {
+					"name": "email",
+					"type": "text"
+				},
+				"view": {
+					"name": "e-mail",
+					"type": "email"
+				}
+			}
+		]
+	},
+
+	{
+		"factory": "sirup_penyedia",
+		"source": {
+			"website": "sirup",
+			"type": "penyedia"
+		},
+		"table": "sirup_penyedia",
+		"maps": [
+			{
+				"array": {
+					"type": "raw_id"
+				},
+				"column": {
+					"name": "source",
+					"type": "integer"
+				}
+			},
+			{
+				"array": {
+					"meta": true,
+					"path": ["Kode RUP"],
+					"type": "integer"
+				},
+				"column": {
+					"name": "id",
+					"type": "integer"
+				},
+				"view": {
+					"name": "Kode RUP",
+					"type": "integer"
+				}
+			},
+			{
+				"array": {
+					"path": ["Nama Paket"],
+					"type": "string"
+				},
+				"column": {
+					"name": "paket",
+					"type": "text"
+				},
+				"view": {
+					"name": "Nama Paket",
+					"type": "text"
+				}
+			},
+			{
+				"array": {
+					"path": ["Nama KLPD"],
+					"type": "string"
+				},
+				"column": {
+					"name": "kldi",
+					"type": "text"
+				},
+				"view": {
+					"name": "KLPD",
+					"type": "text"
+				}
+			},
+			{
+				"array": {
+					"path": ["Satuan Kerja"],
+					"type": "string"
+				},
+				"column": {
+					"name": "satuan",
+					"type": "text"
+				},
+				"view": {
+					"name": "Satuan Kerja",
+					"type": "text"
+				}
+			},
+			{
+				"array": {
+					"path": ["Tahun Anggaran"],
+					"type": "integer"
+				},
+				"column": {
+					"name": "tahun",
+					"type": "integer"
+				},
+				"view": {
+					"name": "Tahun Anggaran",
+					"type": "time_resolution_year"
+				}
+			},
+			{
+				"array": {
+					"path": ["Lokasi Pekerjaan"],
+					"preprocess": "rotate_table",
+					"type": ["json"]
+				},
+				"column": {
+					"name": "lokasi_pekerjaan_dump",
+					"type": ["json"]
+				}
+			},
+			{
+				"array": {
+					"path": ["Volume Pekerjaan"],
+					"type": "string"
+				},
+				"column": {
+					"name": "volume",
+					"type": "text"
+				},
+				"view": {
+					"name": "Volume",
+					"type": "text"
+				}
+			},
+			{
+				"array": {
+					"path": ["Uraian Pekerjaan"],
+					"postprocess": "clean_uraian_spesifikasi",
+					"type": "string"
+				},
+				"column": {
+					"name": "uraian",
+					"type": "text"
+				},
+				"view": {
+					"name": "Uraian Pekerjaan",
+					"type": "text"
+				}
+			},
+			{
+				"array": {
+					"path": ["Spesifikasi Pekerjaan"],
+					"postprocess": "clean_uraian_spesifikasi",
+					"type": "string"
+				},
+				"column": {
+					"name": "spesifikasi",
+					"type": "text"
+				},
+				"view": {
+					"name": "Spesifikasi Pekerjaan",
+					"type": "text"
+				}
+			},
+			{
+				"array": {
+					"path": ["Produk Dalam Negeri"],
+					"preprocess": "parse_boolean",
+					"type": "boolean"
+				},
+				"column": {
+					"name": "dalam_negeri",
+					"type": "boolean"
+				},
+				"view": {
+					"name": "Produk Dalam Negeri",
+					"type": "boolean"
+				}
+			},
+			{
+				"array": {
+					"path": ["Usaha Kecil"],
+					"preprocess": "parse_boolean",
+					"type": "boolean"
+				},
+				"column": {
+					"name": "usaha_kecil",
+					"type": "boolean"
+				},
+				"view": {
+					"name": "Usaha Kecil",
+					"type": "boolean"
+				}
+			},
+			{
+				"array": {
+					"path": ["Pengadaan Berkelanjutan atau Sustainable Public Procurement (SPP)", "Aspek Ekonomi"],
+					"preprocess": "parse_boolean",
+					"type": "boolean"
+				},
+				"column": {
+					"name": "spp_ekonomi",
+					"type": "boolean"
+				},
+				"view": {
+					"name": "SPP Ekonomi",
+					"type": "boolean"
+				}
+			},
+			{
+				"array": {
+					"path": ["Pengadaan Berkelanjutan atau Sustainable Public Procurement (SPP)", "Aspek Sosial"],
+					"preprocess": "parse_boolean",
+					"type": "boolean"
+				},
+				"column": {
+					"name": "spp_sosial",
+					"type": "boolean"
+				},
+				"view": {
+					"name": "SPP Sosial",
+					"type": "boolean"
+				}
+			},
+			{
+				"array": {
+					"path": ["Pengadaan Berkelanjutan atau Sustainable Public Procurement (SPP)", "Aspek Lingkungan"],
+					"preprocess": "parse_boolean",
+					"type": "boolean"
+				},
+				"column": {
+					"name": "spp_lingkungan",
+					"type": "boolean"
+				},
+				"view": {
+					"name": "SPP Lingkungan",
+					"type": "boolean"
+				}
+			},
+			{
+				"array": {
+					"path": ["Pra DIPA / DPA"],
+					"preprocess": "parse_boolean",
+					"type": "boolean"
+				},
+				"column": {
+					"name": "pra_dd",
+					"type": "boolean"
+				},
+				"view": {
+					"name": "Pra DIPA / DPA",
+					"type": "boolean"
+				}
+			},
+			{
+				"array": {
+					"path": ["Nomer KUAPPAS"],
+					"type": "string"
+				},
+				"column": {
+					"name": "kuappas",
+					"type": "text"
+				},
+				"view": {
+					"name": "Nomer KUAPPAS",
+					"type": "text"
+				}
+			},
+			{
+				"array": {
+					"path": ["Sumber Dana", "Sumber Dana"],
+					"type": ["string"]
+				},
+				"column": {
+					"name": "sumber_dana",
+					"type": ["text"]
+				},
+				"view": {
+					"name": "Sumber Dana",
+					"type": ["text"]
+				}
+			},
+			{
+				"array": {
+					"path": ["Sumber Dana", "Pagu"],
+					"type": ["integer"]
+				},
+				"column": {
+					"name": "pagu",
+					"type": ["bigint"]
+				},
+				"view": {
+					"name": "Pagu",
+					"type": ["integer"]
+				}
+			},
+			{
+				"array": {
+					"path": ["Sumber Dana"],
+					"preprocess": "rotate_table",
+					"type": ["json"]
+				},
+				"column": {
+					"name": "sumber_dana_dump",
+					"type": ["json"]
+				}
+			},
+			{
+				"array": {
+					"path": ["Jenis Pengadaan"],
+					"type": "string"
+				},
+				"column": {
+					"name": "jenis",
+					"type": "text"
+				},
+				"view": {
+					"name": "Jenis Pengadaan",
+					"type": "text"
+				}
+			},
+			{
+				"array": {
+					"path": ["Total Pagu"],
+					"type": "integer"
+				},
+				"column": {
+					"name": "total_pagu",
+					"type": "bigint"
+				},
+				"view": {
+					"name": "Total Pagu",
+					"type": "integer"
+				}
+			},
+			{
+				"array": {
+					"path": ["Metode Pemilihan"],
+					"postprocess": "clean_pemilihan",
+					"type": "string"
+				},
+				"column": {
+					"name": "pemilihan",
+					"type": "text"
+				},
+				"view": {
+					"name": "Metode Pemilihan",
+					"type": "text"
+				}
+			},
+			{
+				"array": {
+					"path": ["Pemanfaatan Barang/Jasa", "Mulai", {}],
+					"preprocess": "parse_month",
+					"type": "datetime"
+				},
+				"column": {
+					"name": "pemanfaatan_awal",
+					"type": "date"
+				},
+				"view": {
+					"name": "Awal Pemanfaatan",
+					"type": "time_resolution_month"
+				}
+			},
+			{
+				"array": {
+					"path": ["Pemanfaatan Barang/Jasa", "Akhir", {}],
+					"preprocess": "parse_month",
+					"type": "datetime"
+				},
+				"column": {
+					"name": "pemanfaatan_akhir",
+					"type": "date"
+				},
+				"view": {
+					"name": "Akhir Pemanfaatan",
+					"type": "time_resolution_month"
+				}
+			},
+			{
+				"array": {
+					"path": ["Jadwal Pelaksanaan Kontrak", "Mulai", {}],
+					"preprocess": "parse_month",
+					"type": "datetime"
+				},
+				"column": {
+					"name": "pelaksanaan_awal",
+					"type": "date"
+				},
+				"view": {
+					"name": "Awal Pelaksanaan",
+					"type": "time_resolution_month"
+				}
+			},
+			{
+				"array": {
+					"path": ["Jadwal Pelaksanaan Kontrak", "Akhir", {}],
+					"preprocess": "parse_month",
+					"type": "datetime"
+				},
+				"column": {
+					"name": "pelaksanaan_akhir",
+					"type": "date"
+				},
+				"view": {
+					"name": "Akhir Pelaksanaan",
+					"type": "time_resolution_month"
+				}
+			},
+			{
+				"array": {
+					"path": ["Jadwal Pemilihan Penyedia", "Mulai", {}],
+					"preprocess": "parse_month",
+					"type": "datetime"
+				},
+				"column": {
+					"name": "pemilihan_awal",
+					"type": "date"
+				},
+				"view": {
+					"name": "Awal Pemilihan",
+					"type": "time_resolution_month"
+				}
+			},
+			{
+				"array": {
+					"path": ["Jadwal Pemilihan Penyedia", "Akhir", {}],
+					"preprocess": "parse_month",
+					"type": "datetime"
+				},
+				"column": {
+					"name": "pemilihan_akhir",
+					"type": "date"
+				},
+				"view": {
+					"name": "Akhir Pemilihan",
+					"type": "time_resolution_month"
+				}
+			},
+			{
+				"array": {
+					"path": ["ID Paket Swakelola"],
+					"type": "integer"
+				},
+				"column": {
+					"name": "id_swakelola",
+					"type": "integer"
+				},
+				"view": {
+					"name": "ID Paket Swakelola",
+					"type": "integer"
+				}
+			},
+			{
+				"array": {
+					"path": ["History Paket"],
+					"type": "integer"
+				},
+				"column": {
+					"name": "history",
+					"type": "integer"
+				},
+				"view": {
+					"name": "History Paket",
+					"type": "integer"
+				}
+			},
+			{
+				"array": {
+					"path": ["Tanggal Perbarui Paket"],
+					"type": "datetime"
+				},
+				"column": {
+					"name": "perbarui",
+					"type": "timestamp"
+				},
+				"view": {
+					"name": "Tanggal Perbarui Paket",
+					"type": "time_resolution_microsecond"
+				}
+			}
+		]
+	},
+
+	{
+		"factory": "sirup_swakelola",
+		"source": {
+			"website": "sirup",
+			"type": "swakelola"
+		},
+		"table": "sirup_swakelola",
+		"maps": [
+			{
+				"array": {
+					"type": "raw_id"
+				},
+				"column": {
+					"name": "source",
+					"type": "integer"
+				}
+			},
+			{
+				"array": {
+					"meta": true,
+					"path": ["Kode RUP", {}],
+					"type": "integer"
+				},
+				"column": {
+					"name": "id",
+					"type": "integer"
+				},
+				"view": {
+					"name": "Kode RUP",
+					"type": "integer"
+				}
+			},
+			{
+				"array": {
+					"path": ["Nama Paket", {}],
+					"type": "string"
+				},
+				"column": {
+					"name": "paket",
+					"type": "text"
+				},
+				"view": {
+					"name": "Paket",
+					"type": "text"
+				}
+			},
+			{
+				"array": {
+					"path": ["KLDI", {}],
+					"type": "string"
+				},
+				"column": {
+					"name": "kldi",
+					"type": "text"
+				},
+				"view": {
+					"name": "KLDI",
+					"type": "text"
+				}
+			},
+			{
+				"array": {
+					"path": ["Satuan Kerja", {}],
+					"type": "string"
+				},
+				"column": {
+					"name": "satuan",
+					"type": "text"
+				},
+				"view": {
+					"name": "Satuan Kerja",
+					"type": "text"
+				}
+			},
+			{
+				"array": {
+					"path": ["Tipe Swakelola", {}],
+					"type": "integer"
+				},
+				"column": {
+					"name": "tipe",
+					"type": "integer"
+				},
+				"view": {
+					"name": "Tipe Swakelola",
+					"type": "integer"
+				}
+			},
+			{
+				"array": {
+					"path": ["Penyelenggara Swakelola"],
+					"type": ["string"]
+				},
+				"column": {
+					"name": "penyelenggara",
+					"type": ["text"]
+				},
+				"view": {
+					"name": "Penyelenggara Swakelola",
+					"type": ["text"]
+				}
+			},
+			{
+				"array": {
+					"path": ["Tahun Anggaran", {}],
+					"type": "integer"
+				},
+				"column": {
+					"name": "tahun",
+					"type": "integer"
+				},
+				"view": {
+					"name": "Tahun Anggaran",
+					"type": "time_resolution_year"
+				}
+			},
+			{
+				"array": {
+					"path": ["Lokasi Pekerjaan", {}],
+					"preprocess": "rotate_table",
+					"type": ["json"]
+				},
+				"column": {
+					"name": "lokasi_pekerjaan_dump",
+					"type": ["json"]
+				}
+			},
+			{
+				"array": {
+					"path": ["Volume", {}],
+					"postprocess": "clean_volume",
+					"type": "string"
+				},
+				"column": {
+					"name": "volume",
+					"type": "text"
+				},
+				"view": {
+					"name": "Volume",
+					"type": "text"
+				}
+			},
+			{
+				"array": {
+					"path": ["Lokasi", {}],
+					"type": "string"
+				},
+				"column": {
+					"name": "lokasi",
+					"type": "text"
+				},
+				"view": {
+					"name": "Lokasi",
+					"type": "address"
+				}
+			},
+			{
+				"array": {
+					"path": ["Deskripsi", {}],
+					"type": "string"
+				},
+				"column": {
+					"name": "deskripsi",
+					"type": "text"
+				},
+				"view": {
+					"name": "Deskripsi",
+					"type": "text"
+				}
+			},
+			{
+				"array": {
+					"path": ["SUMBER DANA", {}, "Sumber Dana"],
+					"type": ["string"]
+				},
+				"column": {
+					"name": "sumber_dana",
+					"type": ["text"]
+				},
+				"view": {
+					"name": "Sumber Dana",
+					"type": ["text"]
+				}
+			},
+			{
+				"array": {
+					"path": ["SUMBER DANA", {}, "Pagu"],
+					"type": ["integer"]
+				},
+				"column": {
+					"name": "pagu",
+					"type": ["bigint"]
+				},
+				"view": {
+					"name": "Pagu",
+					"type": ["integer"]
+				}
+			},
+			{
+				"array": {
+					"path": ["SUMBER DANA", {}],
+					"preprocess": "rotate_table",
+					"type": ["json"]
+				},
+				"column": {
+					"name": "sumber_dana_dump",
+					"type": ["json"]
+				}
+			},
+			{
+				"array": {
+					"path": ["SUMBER DANA", {}, "Pagu"],
+					"process": "sum_pagu",
+					"type": "integer"
+				},
+				"column": {
+					"name": "total_pagu",
+					"type": "bigint"
+				},
+				"view": {
+					"name": "Total Pagu",
+					"type": "integer"
+				}
+			},
+			{
+				"array": {
+					"path": ["Awal", {}],
+					"preprocess": "parse_month",
+					"type": "datetime"
+				},
+				"column": {
+					"name": "pelaksanaan_awal",
+					"type": "date"
+				},
+				"view": {
+					"name": "Awal Pelaksanaan",
+					"type": "time_resolution_month"
+				}
+			},
+			{
+				"array": {
+					"path": ["Akhir", {}],
+					"preprocess": "parse_month",
+					"type": "datetime"
+				},
+				"column": {
+					"name": "pelaksanaan_akhir",
+					"type": "date"
+				},
+				"view": {
+					"name": "Akhir Pelaksanaan",
+					"type": "time_resolution_month"
+				}
+			}
+		]
+	},
+
+	{
+		"factory": "modi",
+		"source": {
+			"website": "modi",
+			"type": null
+		},
+		"table": "modi_profil",
+		"maps": [
+			{
+				"array": {
+					"type": "raw_id"
+				},
+				"column": {
+					"name": "source",
+					"type": "integer"
+				}
+			},
+			{
+				"array": {
+					"path": ["profile", "1. Profil Perusahaan", "Kode Perusahaan"],
+					"type": "integer"
+				},
+				"column": {
+					"name": "id",
+					"type": "integer"
+				},
+				"view": {
+					"name": "Kode Perusahaan",
+					"type": "integer"
+				}
+			},
+			{
+				"array": {
+					"path": ["profile", "1. Profil Perusahaan", "Nama Perusahaan"],
+					"type": "string"
+				},
+				"column": {
+					"name": "nama_perusahaan",
+					"type": "text"
+				},
+				"view": {
+					"name": "Nama Perusahaan",
+					"type": "text"
+				}
+			},
+			{
+				"array": {
+					"path": ["profile", "1. Profil Perusahaan", "Jenis Badan Usaha"],
+					"type": "string"
+				},
+				"column": {
+					"name": "jenis_usaha",
+					"type": "text"
+				},
+				"view": {
+					"name": "Jenis Badan Usaha",
+					"type": "text"
+				}
+			},
+			{
+				"array": {
+					"path": ["profile", "1. Profil Perusahaan", "No. Akte"],
+					"postprocess": "clean_akte",
+					"type": "string"
+				},
+				"column": {
+					"name": "akte",
+					"type": "text"
+				},
+				"view": {
+					"name": "Nomor Akte",
+					"type": "text"
+				}
+			},
+			{
+				"array": {
+					"path": ["profile", "1. Profil Perusahaan", "Tgl. Akte"],
+					"type": "datetime"
+				},
+				"column": {
+					"name": "tanggal",
+					"type": "date"
+				},
+				"view": {
+					"name": "Tanggal Akte",
+					"type": "time_resolution_day"
+				}
+			}
+		]
+	},
+
+	{
+		"factory": "modi",
+		"source": {
+			"website": "modi",
+			"type": null
+		},
+		"table": "modi_saham",
+		"maps": [
+			{
+				"array": {
+					"type": "raw_id"
+				},
+				"column": {
+					"name": "source",
+					"type": "integer"
+				}
+			},
+			{
+				"array": {
+					"meta": true,
+					"path": ["profile", "1. Profil Perusahaan", "Kode Perusahaan"],
+					"type": "integer"
+				},
+				"column": {
+					"name": "id",
+					"type": "integer"
+				},
+				"view": {
+					"name": "Kode Perusahaan",
+					"type": "integer"
+				}
+			},
+			{
+				"array": {
+					"type": "instance_id"
+				},
+				"column": {
+					"name": "instance",
+					"type": "integer"
+				}
+			},
+			{
+				"array": {
+					"path": ["profile", "3. Pemilik / Pemegang Saham", "Jenis", {}],
+					"type": "string"
+				},
+				"column": {
+					"name": "jenis_saham",
+					"type": "text"
+				},
+				"view": {
+					"name": "Jenis Saham",
+					"type": "text"
+				}
+			},
+			{
+				"array": {
+					"path": ["profile", "3. Pemilik / Pemegang Saham", "Nama", {}],
+					"type": "string"
+				},
+				"column": {
+					"name": "pemegang_saham",
+					"type": "text"
+				},
+				"view": {
+					"name": "Pemegang Saham",
+					"type": "text"
+				}
+			},
+			{
+				"array": {
+					"path": ["profile", "3. Pemilik / Pemegang Saham", "Asal Negara", {}],
+					"type": "string"
+				},
+				"column": {
+					"name": "negara",
+					"type": "text"
+				},
+				"view": {
+					"name": "Asal Negara",
+					"type": "country"
+				}
+			},
+			{
+				"array": {
+					"path": ["profile", "3. Pemilik / Pemegang Saham", "Persentase (%)", {}],
+					"type": "double"
+				},
+				"column": {
+					"name": "persentase",
+					"type": "double precision"
+				},
+				"view": {
+					"name": "Persentase (%)",
+					"type": "double"
+				}
+			},
+			{
+				"array": {
+					"path": ["profile", "3. Pemilik / Pemegang Saham", "Keterangan", {}],
+					"type": "string"
+				},
+				"column": {
+					"name": "keterangan",
+					"type": "text"
+				},
+				"view": {
+					"name": "Keterangan",
+					"type": "text"
+				}
+			}
+		]
+	},
+
+	{
+		"factory": "modi",
+		"source": {
+			"website": "modi",
+			"type": null
+		},
+		"table": "modi_npwp",
+		"maps": [
+			{
+				"array": {
+					"type": "raw_id"
+				},
+				"column": {
+					"name": "source",
+					"type": "integer"
+				}
+			},
+			{
+				"array": {
+					"meta": true,
+					"path": ["profile", "1. Profil Perusahaan", "Kode Perusahaan"],
+					"type": "integer"
+				},
+				"column": {
+					"name": "id",
+					"type": "integer"
+				},
+				"view": {
+					"name": "Kode Perusahaan",
+					"type": "integer"
+				}
+			},
+			{
+				"array": {
+					"type": "instance_id"
+				},
+				"column": {
+					"name": "instance",
+					"type": "integer"
+				}
+			},
+			{
+				"array": {
+					"path": ["profile", "5. NPWP Perusahaan", "Nomor NPWP", {}],
+					"type": "string"
+				},
+				"column": {
+					"name": "nomor_npwp",
+					"type": "text"
+				},
+				"view": {
+					"name": "Nomor NPWP",
+					"type": "text"
+				}
+			},
+			{
+				"array": {
+					"path": ["profile", "5. NPWP Perusahaan", "Nama NPWP", {}],
+					"type": "string"
+				},
+				"column": {
+					"name": "nama_npwp",
+					"type": "text"
+				},
+				"view": {
+					"name": "Nama NPWP",
+					"type": "human_name"
+				}
+			},
+			{
+				"array": {
+					"path": ["profile", "5. NPWP Perusahaan", "Alamat NPWP", {}],
+					"type": "string"
+				},
+				"column": {
+					"name": "alamat_npwp",
+					"type": "text"
+				},
+				"view": {
+					"name": "Alamat NPWP",
+					"type": "address"
+				}
+			},
+			{
+				"array": {
+					"path": ["profile", "5. NPWP Perusahaan", "Dokumen NPWP", {}],
+					"type": "string"
+				},
+				"column": {
+					"name": "dokumen_npwp",
+					"type": "text"
+				},
+				"view": {
+					"name": "Dokumen NPWP",
+					"type": "text"
+				}
+			},
+			{
+				"array": {
+					"path": ["profile", "5. NPWP Perusahaan", "Keterangan", {}],
+					"type": "string"
+				},
+				"column": {
+					"name": "keterangan",
+					"type": "text"
+				},
+				"view": {
+					"name": "Keterangan",
+					"type": "text"
+				}
+			}
+		]
+	},
+
+	{
+		"factory": "modi",
+		"source": {
+			"website": "modi",
+			"type": null
+		},
+		"table": "modi_alamat",
+		"maps": [
+			{
+				"array": {
+					"type": "raw_id"
+				},
+				"column": {
+					"name": "source",
+					"type": "integer"
+				}
+			},
+			{
+				"array": {
+					"meta": true,
+					"path": ["profile", "1. Profil Perusahaan", "Kode Perusahaan"],
+					"type": "integer"
+				},
+				"column": {
+					"name": "id",
+					"type": "integer"
+				},
+				"view": {
+					"name": "Kode Perusahaan",
+					"type": "integer"
+				}
+			},
+			{
+				"array": {
+					"type": "instance_id"
+				},
+				"column": {
+					"name": "instance",
+					"type": "integer"
+				}
+			},
+			{
+				"array": {
+					"path": ["alamat", {}, "Peruntukan Alamat", {}],
+					"type": "string"
+				},
+				"column": {
+					"name": "peruntukan",
+					"type": "text"
+				},
+				"view": {
+					"name": "Peruntukan Alamat",
+					"type": "text"
+				}
+			},
+			{
+				"array": {
+					"path": ["alamat", {}, "Alamat", {}],
+					"postprocess": "normalize_whitespace",
+					"type": "string"
+				},
+				"column": {
+					"name": "alamat",
+					"type": "text"
+				},
+				"view": {
+					"name": "Alamat",
+					"type": "address"
+				}
+			},
+			{
+				"array": {
+					"path": ["alamat", {}, "Keterangan", {}],
+					"type": "string"
+				},
+				"column": {
+					"name": "keterangan",
+					"type": "text"
+				},
+				"view": {
+					"name": "Keterangan",
+					"type": "text"
+				}
+			},
+			{
+				"array": {
+					"cursor": ["alamat", {}, "No", {}],
+					"path": ["alamat", {}, "Update terakhir tgl"],
+					"preprocess": "parse_update",
+					"type": "datetime"
+				},
+				"column": {
+					"name": "update",
+					"type": "timestamp"
+				},
+				"view": {
+					"name": "Tanggal update terakhir",
+					"type": "time_resolution_microsecond"
+				}
+			},
+			{
+				"array": {
+					"cursor": ["alamat", {}, "No", {}],
+					"path": ["alamat", {}],
+					"get": "key",
+					"process": "parse_revisi_alamat",
+					"type": "integer"
+				},
+				"column": {
+					"name": "revisi",
+					"type": "integer"
+				},
+				"view": {
+					"name": "revisi",
+					"type": "integer"
+				}
+			}
+		]
+	},
+
+	{
+		"factory": "modi",
+		"source": {
+			"website": "modi",
+			"type": null
+		},
+		"table": "modi_direksi",
+		"maps": [
+			{
+				"array": {
+					"type": "raw_id"
+				},
+				"column": {
+					"name": "source",
+					"type": "integer"
+				}
+			},
+			{
+				"array": {
+					"meta": true,
+					"path": ["profile", "1. Profil Perusahaan", "Kode Perusahaan"],
+					"type": "integer"
+				},
+				"column": {
+					"name": "id",
+					"type": "integer"
+				},
+				"view": {
+					"name": "Kode Perusahaan",
+					"type": "integer"
+				}
+			},
+			{
+				"array": {
+					"type": "instance_id"
+				},
+				"column": {
+					"name": "instance",
+					"type": "integer"
+				}
+			},
+			{
+				"array": {
+					"path": ["direksi", {}, "Nama", {}],
+					"type": "string"
+				},
+				"column": {
+					"name": "nama",
+					"type": "text"
+				},
+				"view": {
+					"name": "Nama",
+					"type": "human_name"
+				}
+			},
+			{
+				"array": {
+					"path": ["direksi", {}, "Jabatan", {}],
+					"type": "string"
+				},
+				"column": {
+					"name": "jabatan",
+					"type": "text"
+				},
+				"view": {
+					"name": "Jabatan",
+					"type": "text"
+				}
+			},
+			{
+				"array": {
+					"path": ["direksi", {}, "Periode", {}],
+					"preprocess": "parse_periode_awal_direksi",
+					"type": "datetime"
+				},
+				"column": {
+					"name": "periode_awal",
+					"type": "date"
+				},
+				"view": {
+					"name": "Awal Periode",
+					"type": "time_resolution_day"
+				}
+			},
+			{
+				"array": {
+					"path": ["direksi", {}, "Periode", {}],
+					"preprocess": "parse_periode_akhir_direksi",
+					"type": "datetime"
+				},
+				"column": {
+					"name": "periode_akhir",
+					"type": "date"
+				},
+				"view": {
+					"name": "Akhir Periode",
+					"type": "time_resolution_day"
+				}
+			},
+			{
+				"array": {
+					"cursor": ["direksi", {}, "No", {}],
+					"path": ["direksi", {}, "Update terakhir tgl"],
+					"preprocess": "parse_update",
+					"type": "datetime"
+				},
+				"column": {
+					"name": "update",
+					"type": "timestamp"
+				},
+				"view": {
+					"name": "Tanggal update terakhir",
+					"type": "time_resolution_microsecond"
+				}
+			},
+			{
+				"array": {
+					"cursor": ["direksi", {}, "No", {}],
+					"path": ["direksi", {}],
+					"get": "key",
+					"process": "parse_revisi_direksi",
+					"type": "integer"
+				},
+				"column": {
+					"name": "revisi",
+					"type": "integer"
+				},
+				"view": {
+					"name": "revisi",
+					"type": "integer"
+				}
+			}
+		]
+	},
+
+	{
+		"factory": "modi",
+		"source": {
+			"website": "modi",
+			"type": null
+		},
+		"table": "modi_perizinan",
+		"maps": [
+			{
+				"array": {
+					"type": "raw_id"
+				},
+				"column": {
+					"name": "source",
+					"type": "integer"
+				}
+			},
+			{
+				"array": {
+					"meta": true,
+					"path": ["profile", "1. Profil Perusahaan", "Kode Perusahaan"],
+					"type": "integer"
+				},
+				"column": {
+					"name": "id",
+					"type": "integer"
+				},
+				"view": {
+					"name": "Kode Perusahaan",
+					"type": "integer"
+				}
+			},
+			{
+				"array": {
+					"type": "instance_id"
+				},
+				"column": {
+					"name": "instance",
+					"type": "integer"
+				}
+			},
+			{
+				"array": {
+					"path": ["perizinan", "Jenis Perizinan", {}],
+					"type": "string"
+				},
+				"column": {
+					"name": "jenis_perizinan",
+					"type": "text"
+				},
+				"view": {
+					"name": "Jenis Perizinan",
+					"type": "text"
+				}
+			},
+			{
+				"array": {
+					"path": ["perizinan", "Nomor Perizinan", {}],
+					"type": "string"
+				},
+				"column": {
+					"name": "nomor_perizinan",
+					"type": "text"
+				},
+				"view": {
+					"name": "Nomor Perizinan",
+					"type": "text"
+				}
+			},
+			{
+				"array": {
+					"path": ["perizinan", "Tahapan Kegiatan", {}],
+					"type": "string"
+				},
+				"column": {
+					"name": "tahapan_kegiatan",
+					"type": "text"
+				},
+				"view": {
+					"name": "Tahapan Kegiatan",
+					"type": "text"
+				}
+			},
+			{
+				"array": {
+					"path": ["perizinan", "Kode WIUP", {}],
+					"type": "string"
+				},
+				"column": {
+					"name": "wiup",
+					"type": "text"
+				},
+				"view": {
+					"name": "Kode WIUP",
+					"type": "text"
+				}
+			},
+			{
+				"array": {
+					"path": ["perizinan", "Komoditas", {}],
+					"type": "string"
+				},
+				"column": {
+					"name": "komoditas",
+					"type": "text"
+				},
+				"view": {
+					"name": "Komoditas",
+					"type": "text"
+				}
+			},
+			{
+				"array": {
+					"path": ["perizinan", "Luas(ha)", {}],
+					"preprocess": "parse_float",
+					"type": "double"
+				},
+				"column": {
+					"name": "luas",
+					"type": "double precision"
+				},
+				"view": {
+					"name": "Luas (ha)",
+					"type": "double"
+				}
+			},
+			{
+				"array": {
+					"path": ["perizinan", "Tgl Mulai Berlaku", {}],
+					"type": "datetime"
+				},
+				"column": {
+					"name": "berlaku_awal",
+					"type": "date"
+				},
+				"view": {
+					"name": "Awal Berlaku",
+					"type": "time_resolution_day"
+				}
+			},
+			{
+				"array": {
+					"path": ["perizinan", "Tgl Berakhir", {}],
+					"type": "datetime"
+				},
+				"column": {
+					"name": "berlaku_akhir",
+					"type": "date"
+				},
+				"view": {
+					"name": "Akhir Berlaku",
+					"type": "time_resolution_day"
+				}
+			},
+			{
+				"array": {
+					"path": ["perizinan", "Tahapan CNC", {}],
+					"type": "string"
+				},
+				"column": {
+					"name": "tahapan_cnc",
+					"type": "text"
+				},
+				"view": {
+					"name": "Tahapan CNC",
+					"type": "text"
+				}
+			},
+			{
+				"array": {
+					"path": ["perizinan", "Lokasi", {}],
+					"type": "string"
+				},
+				"column": {
+					"name": "lokasi",
+					"type": "text"
+				},
+				"view": {
+					"name": "Lokasi",
+					"type": "address"
+				}
+			}
+		]
+	}
+
+]
