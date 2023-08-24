@@ -28,6 +28,7 @@
 			},
 			{
 				"array": {
+					"meta": true,
 					"path": ["KLDI"],
 					"type": "string"
 				},
@@ -42,6 +43,7 @@
 			},
 			{
 				"array": {
+					"meta": true,
 					"path": ["Satuan Kerja"],
 					"type": "string"
 				},

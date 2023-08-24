@@ -57,16 +57,17 @@ function main() {
 				fn($t) => null
 			);
 
+			printf("%s: ", $whoami);
 			if (count($rows) > 0)
 				foreach ($rows as $i => $vals)
 					if (!$insert(...$vals)) {
-						printf("%s: FAIL [%d]\n", $whoami, $i);
+						printf("FAIL [%d]\n", $i);
 						better_dump($vals);
 					}
 					else
-						printf("%s: INSERT [%d]\n", $whoami, $i);
+						printf("INSERT [%d]\n", $i);
 			else
-				printf("%s: EMPTY\n", $whoami);
+				printf("EMPTY\n");
 		}
 	}
 

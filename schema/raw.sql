@@ -53,5 +53,19 @@ ALTER TABLE ONLY public.raw
 
 
 --
+-- Name: raw_website_type_id_idx; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX raw_website_type_id_idx ON public.raw USING btree (website, type, id) WITH (deduplicate_items='true');
+
+
+--
+-- Name: raw_website_type_idx; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX raw_website_type_idx ON public.raw USING btree (website, type) WITH (deduplicate_items='true');
+
+
+--
 -- PostgreSQL database dump complete
 --

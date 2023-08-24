@@ -1,24 +1,18 @@
 <?php
 
 function post_content ($url, $type, $trial, $status, $content) {
-	echo '<details>';
 	switch ($status) {
 	case FAIL:
 		$status = 'FAIL';
-		printf('<a href="%s"><p>%s</p></a>', $url, $url);
 		break;
 	case SUCCESS:
 		$status = 'SUCCESS';
-		printf('<div><p>%s</p></div>', htmlspecialchars($content));
 		break;
 	case EXISTS:
 		$status = 'EXISTS';
-		printf('<p>Please refer to database.</p>', $url, $url);
 		break;
 	}
-	printf('<summary>%s %s [ %d ] [%s]</summary>', $url, $type, $trial, $status);
-	echo '</details>';
-	ob_flush(); flush();
+	printf("%s %s [ %d ] [%s]\n", $url, $type, $trial, $status);
 };
 
 class trial_count {
@@ -44,18 +38,12 @@ function dump_insert($insert, $urlf, $fail) {
 }
 
 function dump_linear_bound($urlf, $conf, $holes, $lb, $ub) {
-	printf(
-		'<details>
-			<summary>%s<p>start: %d, lb: %d, ub: %d</p></summary>
-			<div style="white-space: pre-wrap;"><p>',
-		$urlf, $conf['start'], $lb, $ub
-	);
-	var_dump($holes);
-	printf(
-			'</p></div>
-		</details>'
-	);
-	ob_flush(); flush();
+	printf("%s\n", $urlf);
+	printf("start: %d, lb: %d, ub: %d\n",  $conf['start'], $lb, $ub);
+	echo 'holes: [';
+	foreach ($holes as $i => $hole)
+		echo $hole.($i < count($holes) - 1 ? ', ' : '');
+	echo "]\n";
 }
 
 require_once('database.php');
@@ -64,7 +52,7 @@ define('ASCENDING' , true );
 define('DESCENDING', false);
 
 function main() {
-	echo '<div style="white-space: pre-wrap; font-family: Consolas;">';
+	echo '<div style="white-space: pre-wrap; font-family: Consolas;">'."\n";
 
 	$ini_array = parse_ini_file("crawl.ini", true, INI_SCANNER_TYPED);
 
@@ -120,7 +108,7 @@ function main() {
 
 	while ($task->work())
 		;
-	echo '<p>Done.</p>';
+	echo "Done.\n";
 
 	echo '</div>';
 }
